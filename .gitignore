@@ -4,7 +4,7 @@
 .idea/libraries/Maven__com_ekassa_lending_shared_1_0_SNAPSHOT.xml
 .idea/misc.xml
 .idea/workspace.xml
-ekassa.iml
+EkassaAuto.iml
 shared/target/
 target/
 /lending.iml

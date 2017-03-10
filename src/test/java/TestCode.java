@@ -26,6 +26,6 @@ public class TestCode {
 
     @Test
     public void sampleTest() {
-        System.out.println("hello world");
+        System.out.println("hello world. I love ekassa :)");
     }
 }

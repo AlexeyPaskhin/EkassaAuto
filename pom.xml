@@ -26,6 +26,14 @@
             <artifactId>webdrivermanager</artifactId>
             <version>1.6.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.opera/operadriver -->
+        <!--<dependency>-->
+            <!--<groupId>com.opera</groupId>-->
+            <!--<artifactId>operadriver</artifactId>-->
+            <!--<version>0.7.3</version>-->
+        <!--</dependency>-->
+
         <!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-chrome-driver -->
       <!--  <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -37,3 +45,4 @@
 
 
 </project>
+

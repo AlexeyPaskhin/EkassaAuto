@@ -1,8 +1,6 @@
 import io.github.bonigarcia.wdm.*;
 import net.lightbody.bmp.proxy.ProxyServer;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Proxy;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -10,6 +8,7 @@ import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -20,9 +19,12 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.nonNull;
+
 /**
  * Created by user on 09.03.2017.
  */
+@Test
 public class Registration {
     private WebDriver driver;
     private MainPage mainPage;
@@ -51,9 +53,8 @@ public class Registration {
 //        driver = new FirefoxDriver();
         driver = new ChromeDriver();
         options = driver.manage();
-        options.timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         options.window().maximize();
-        driver.get("http://test.ekassa.com");
         explWait = new WebDriverWait(driver, 10);
         mainPage = new MainPage(driver);
     }
@@ -63,36 +64,60 @@ public class Registration {
         mainPage.inputToPhone(REGNUMBER)
                 .uncheckRegChBox()
                 .submitInvalRegForm();
-        Assert.assertTrue(mainPage.fieldWithChecboxIsInvalid());
+        Assert.assertTrue(mainPage.fieldWithCheckboxIsInvalid());
     }
 
     @Test
-    public void submittingWhenPhoneIsBlank() {
-        mainPage.inputToPhone("")
-                .markRegCheckbox()
-                .submitInvalRegForm();
-        Assert.assertTrue(mainPage.inputIsInvalid());
+    public void submittingWhenPhoneIsBlank() throws InterruptedException {
+        mainPage.markRegCheckbox()
+                .inputToPhone("")
+                .submitInvalRegForm()
+                .waitForReaction();
+        try {
+            Assert.assertTrue(mainPage.inputIsInvalid());
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Registration form is submitted", ex);
+        }
     }
 
     @Test
-    public void incompletePhoneNumber() {
+    public void incompletePhoneNumber() throws InterruptedException {
         mainPage.inputToPhone("22222222");
         String def = mainPage.getValueFromPhoneInput();
         mainPage.markRegCheckbox()
-                .submitInvalRegForm();
-        Assert.assertTrue(mainPage.inputIsInvalid());
-        Assert.assertEquals(mainPage.getValueFromPhoneInput(), def, "Digits are deleted from input");
+                .submitInvalRegForm()
+                .waitForReaction();
+        try {
+            Assert.assertTrue(mainPage.inputIsInvalid());
+            Assert.assertEquals(mainPage.getValueFromPhoneInput(), def, "Digits are deleted from input");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Registration form is submitted", ex);
+        }
     }
 
     @Test
-    public void enteringLettersAndSymbolsToPhone() {
+    public void enteringLettersAndSymbolsToPhone() throws InterruptedException {
         String def = mainPage.getValueFromPhoneInput();
         mainPage.inputToPhone("qwe ы!@-");
         Assert.assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
         mainPage.markRegCheckbox()
-                .submitInvalRegForm();
-        Assert.assertTrue(mainPage.inputIsInvalid());
+                .submitInvalRegForm()
+                .waitForReaction();
+        try {
+            Assert.assertTrue(mainPage.inputIsInvalid());
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Registration form is submitted", ex);
+        }
     }
+//    @Test
+//    public void accessibilityOfAServiceTermsText() {
+//        mainPage.clickTheTerms();
+//        Assert.assertNotNull(mainPage.frameOfTerms, "Terms aren't opened!");
+//        mainPage.exitFromTerms();
+//    }
 
 //    @Test (dependsOnMethods = "enteringLettersAndSymbolsToPhone")
 //    public void next() throws IOException {
@@ -100,10 +125,10 @@ public class Registration {
 //        mainPage.findWithXPath("//*[@class='footer__contacts layout-wrap layout-align-center-stretch layout-row']//div[3]//a").click();
 //    }
 
-    @AfterClass
-    public void teardown() {
-        if (driver != null) {
-            driver.quit();
-        }
-    }
+//    @AfterClass
+//    public void teardown() {
+//        if (driver != null) {
+//            driver.quit();
+//        }
+//    }
 }

@@ -20,11 +20,16 @@ public class MainPage extends AbstractPage {
     @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
     private WebElement mainRegCheckbox;
     @FindBy(xpath = "//*[@type='submit']")
-    private WebElement submitLoanButton;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") private WebElement linkWarunkami;
+    protected WebElement submitLoanButton;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
+    private WebElement linkTerms;
+    @FindBy(xpath = "//md-dialog[@class='p-15 _md md-dialog-fullscreen md-transition-in']")
+    protected WebElement frameOfTerms;
 
-    public MainPage(WebDriver driver) {
+
+    MainPage(WebDriver driver) {
         super(driver);
+        driver.get("http://test.ekassa.com");
         if (!"EKassa - Szybka Pożyczka Przez Internet".equals(driver.getTitle())) {
             throw new IllegalStateException("This is not the main page");
         }
@@ -36,14 +41,16 @@ public class MainPage extends AbstractPage {
     }
 
     MainPage submitInvalRegForm() {
-        mainRegForm.submit(submitLoanButton);
+        mainRegForm.submit();
         return this;
     }
+
     RegPage submitNewUserRegForm() {
 //        mainRegForm.submit(submitLoanButton);
         mainRegForm.submit();
         return new RegPage(driver);
     }
+
     PasswordPage submitExistUserRegForm() {
         mainRegForm.submit(submitLoanButton);
         return new PasswordPage(driver);
@@ -74,10 +81,20 @@ public class MainPage extends AbstractPage {
     }
 
     boolean inputIsInvalid() {
-        return input.getAttribute("class").contains("invalid");
+        return mainRegForm.getElementClass(input).contains("invalid");
     }
 
+    boolean fieldWithCheckboxIsInvalid() {
+        return mainRegForm.getElementClass(linkTerms).contains("error");
+    }
 
-    public boolean fieldWithChecboxIsInvalid() { return mainRegForm.getElementClass(linkWarunkami).contains("error");
+    MainPage clickTheTerms() {
+        linkTerms.click();
+        return this;
+    }
+
+    MainPage exitFromTerms() {
+        findWithXPath("/html").sendKeys(Keys.ESCAPE);
+        return this;
     }
 }

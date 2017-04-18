@@ -1,5 +1,5 @@
-import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -14,6 +14,7 @@ import java.util.Date;
 public abstract class AbstractPage {
     protected WebDriver driver;
     JavascriptExecutor jse;
+//    @FindBy(xpath = "//div[@class='preloader ng-scope']") WebElement loader;
     public AbstractPage (WebDriver driver) {
         this.driver = driver;
         this.jse = (JavascriptExecutor) driver;
@@ -31,8 +32,8 @@ public abstract class AbstractPage {
 
 
 
-    void waitFor() {
-
+    void waitForReaction() throws InterruptedException {
+        Thread.sleep(1000);
     }
 
 

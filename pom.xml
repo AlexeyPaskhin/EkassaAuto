@@ -12,7 +12,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.1</version>
         </dependency>
 
         <dependency>
@@ -21,18 +21,13 @@
             <version>6.8</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>1.6.1</version>
+            <version>1.6.2</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/net.lightbody.bmp/browsermob-proxy -->
-        <dependency>
-            <groupId>net.lightbody.bmp</groupId>
-            <artifactId>browsermob-proxy</artifactId>
-            <version>2.0.0</version>
-        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.opera/operadriver -->
         <!--<dependency>-->

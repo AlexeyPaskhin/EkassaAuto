@@ -16,10 +16,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Objects.nonNull;
 
 /**
  * Created by user on 09.03.2017.
@@ -30,8 +27,7 @@ public class Registration {
     private MainPage mainPage;
     private RegPage regPage;
     WebDriver.Options options;
-    WebDriverWait explWait;
-    private static String REGNUMBER = "222222220";
+    static String regNumber = "222222220";
 
     @BeforeClass
     public void preparation() {
@@ -53,21 +49,53 @@ public class Registration {
 //        driver = new FirefoxDriver();
         driver = new ChromeDriver();
         options = driver.manage();
-        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        options.timeouts().implicitlyWait(3, TimeUnit.SECONDS);
         options.window().maximize();
-        explWait = new WebDriverWait(driver, 10);
         mainPage = new MainPage(driver);
+//        regPage = mainPage.submitAnUnregNumber();
     }
 
-    @Test
+    @Test(priority = 3)
+    public void positiveValidationWhileUsingHyphenInNameField() {
+        regPage.inputToName("Anna-Maria")
+                .moveFromAField(regPage.nameField);
+        Assert.assertFalse(regPage.fieldIsInvalid(regPage.nameField), "Hyphen isn't allowed in the name field!");
+        Assert.assertFalse(regPage.fieldBorderIsRed(regPage.nameField), "Border of valid field is highlighted with red color!");
+    }
+
+    @Test(priority = 3, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
+    public void negativeValidationWhileUsingHyphenInNameField(String text) {
+        regPage.inputToName(text)
+                .moveFromAField(regPage.nameField);
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.nameField), "Undisguised hyphen is allowed in the name field!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
+
+    }
+
+    @Test(priority = 2)
+    public void enteringNonLatinAndSpecCharsToNameField() {
+        regPage = mainPage.submitAnUnregNumber();
+        regPage.inputToName("іыцжч!@.\"є'=+&")
+                .moveFromAField(regPage.nameField);
+        Assert.assertEquals(regPage.getValue(regPage.nameField), "", "Something except latin letters is entered to the name field!");
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.nameField));
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Invalid border isn't highlighted with red color!");
+    }
+
+    @Test(priority = 1)
     public void uncheckedCheckbox() {
-        mainPage.inputToPhone(REGNUMBER)
+        mainPage.inputToPhone(regNumber)
                 .uncheckRegChBox()
                 .submitInvalRegForm();
-        Assert.assertTrue(mainPage.fieldWithCheckboxIsInvalid());
+        try {
+            Assert.assertTrue(mainPage.fieldWithCheckboxIsInvalid());
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Registration form is submitted", ex);
+        }
     }
 
-    @Test
+    @Test(priority = 1)
     public void submittingWhenPhoneIsBlank() throws InterruptedException {
         mainPage.markRegCheckbox()
                 .inputToPhone("")
@@ -81,7 +109,8 @@ public class Registration {
         }
     }
 
-    @Test
+    @Test(priority = 1)
+    //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
     public void incompletePhoneNumber() throws InterruptedException {
         mainPage.inputToPhone("22222222");
         String def = mainPage.getValueFromPhoneInput();
@@ -97,7 +126,7 @@ public class Registration {
         }
     }
 
-    @Test
+    @Test(priority = 1)
     public void enteringLettersAndSymbolsToPhone() throws InterruptedException {
         String def = mainPage.getValueFromPhoneInput();
         mainPage.inputToPhone("qwe ы!@-");
@@ -112,23 +141,25 @@ public class Registration {
             throw new AssertionError("Registration form is submitted", ex);
         }
     }
-//    @Test
-//    public void accessibilityOfAServiceTermsText() {
-//        mainPage.clickTheTerms();
-//        Assert.assertNotNull(mainPage.frameOfTerms, "Terms aren't opened!");
-//        mainPage.exitFromTerms();
-//    }
 
-//    @Test (dependsOnMethods = "enteringLettersAndSymbolsToPhone")
-//    public void next() throws IOException {
-////        explWait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@class='footer__contacts layout-wrap layout-align-center-stretch layout-row']//div[3]//a")));
-//        mainPage.findWithXPath("//*[@class='footer__contacts layout-wrap layout-align-center-stretch layout-row']//div[3]//a").click();
-//    }
+    @Test(priority = 1)
+    public void accessibilityOfAServiceTermsText() {
+        mainPage.clickTheTerms();
+        try {
+            Assert.assertTrue(mainPage.mdDialogOfTerms.isDisplayed(), "Terms aren't opened!");
+            mainPage.exitFromTerms()
+                    .waitForClosingTerms();
+        } catch (NoSuchElementException ex) {
+            throw new AssertionError("Terms aren't displayed!", ex);
+        }
+    }
 
-//    @AfterClass
-//    public void teardown() {
-//        if (driver != null) {
-//            driver.quit();
-//        }
-//    }
+
+    @AfterClass
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
 }

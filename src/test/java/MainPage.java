@@ -1,10 +1,9 @@
 import io.github.bonigarcia.wdm.ChromeDriverManager;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.TimeUnit;
@@ -23,8 +22,9 @@ public class MainPage extends AbstractPage {
     protected WebElement submitLoanButton;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
     private WebElement linkTerms;
+    @CacheLookup
     @FindBy(xpath = "//md-dialog[@class='p-15 _md md-dialog-fullscreen md-transition-in']")
-    protected WebElement frameOfTerms;
+    protected WebElement mdDialogOfTerms;
 
 
     MainPage(WebDriver driver) {
@@ -45,9 +45,15 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-    RegPage submitNewUserRegForm() {
-//        mainRegForm.submit(submitLoanButton);
-        mainRegForm.submit();
+//    RegPage submitNewUserRegForm() {
+////        mainRegForm.submit(submitLoanButton);
+//
+//    }
+
+    RegPage submitAnUnregNumber() {
+        mainRegForm.set(input, Registration.regNumber)
+                .markCheckBox(mainRegCheckbox)
+                .submit();
         return new RegPage(driver);
     }
 
@@ -72,10 +78,6 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-//    void pressEnter() {
-//        findWithXPath("/html").sendKeys(Keys.ENTER);
-//    }
-
     String getValueFromPhoneInput() {
         return mainRegForm.getFieldValue(input);
     }
@@ -94,7 +96,20 @@ public class MainPage extends AbstractPage {
     }
 
     MainPage exitFromTerms() {
-        findWithXPath("/html").sendKeys(Keys.ESCAPE);
+        findWithXPath("//body").sendKeys(Keys.ESCAPE);
         return this;
     }
+
+    void waitForReaction() throws InterruptedException {
+        Thread.sleep(1000);
+        explWait.until(or(elementToBeClickable(submitLoanButton),
+                elementToBeClickable(By.xpath("(//div[@class='fb-login-button fb_iframe_widget'])"))));
+    }
+
+    MainPage waitForClosingTerms() {
+        explWait.until(invisibilityOf(mdDialogOfTerms));
+        return this;
+    }
+
+
 }

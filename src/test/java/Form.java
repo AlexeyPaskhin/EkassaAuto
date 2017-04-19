@@ -5,7 +5,7 @@ import org.openqa.selenium.WebElement;
  */
 public class Form extends AbstractElement {
     public Form(WebElement element) {
-    super(element);
+        super(element);
     }
 
     public Form set(String xplocator, String value) {
@@ -13,8 +13,10 @@ public class Form extends AbstractElement {
         findWithXPath(xplocator).sendKeys(value);
         return this;
     }
+
     public Form set(WebElement field, String value) {
-        field.clear(); field.click();
+        field.clear();
+        field.click();
         field.sendKeys(value);
         return this;
     }
@@ -22,18 +24,22 @@ public class Form extends AbstractElement {
     public String getFieldValue(String xplocator) {
         return findWithXPath(xplocator).getAttribute("value");
     }
+
     public String getFieldValue(WebElement field) {
         field.click();
         return field.getAttribute("value");
     }
+
     public String getElementClass(WebElement element) {
         return element.getAttribute("class");
     }
+
     public Form markCheckBox(WebElement chBox) {
-        if(chBox.getAttribute("aria-checked").equals("false"))
+        if (chBox.getAttribute("aria-checked").equals("false"))
             chBox.click();
         return this;
     }
+
     public Form uncheck(WebElement chBox) {
         if (chBox.getAttribute("aria-checked").equals("true"))
             chBox.click();
@@ -43,6 +49,7 @@ public class Form extends AbstractElement {
     void submit() {
         context.submit();
     }
+
     void submit(WebElement submitButton) {
         submitButton.click();
     }

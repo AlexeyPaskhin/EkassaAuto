@@ -15,7 +15,7 @@ public class MainPage extends AbstractPage {
     private Form mainRegForm;
 
     @FindBy(xpath = "//input[@name='phone']")
-    private WebElement input;
+    protected WebElement input;
     @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
     private WebElement mainRegCheckbox;
     @FindBy(xpath = "//*[@type='submit']")
@@ -30,6 +30,7 @@ public class MainPage extends AbstractPage {
     MainPage(WebDriver driver) {
         super(driver);
         driver.get("http://test.ekassa.com");
+        waitForOpennessOfCalc();
         if (!"EKassa - Szybka Pożyczka Przez Internet".equals(driver.getTitle())) {
             throw new IllegalStateException("This is not the main page");
         }
@@ -111,5 +112,8 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-
+    public MainPage waitForOpennessOfCalc() {
+        explWait.until(invisibilityOf(findWithXPath("//div[text()='Chwilówki']")));
+        return this;
+    }
 }

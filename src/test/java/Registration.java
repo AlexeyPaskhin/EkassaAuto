@@ -69,24 +69,25 @@ public class Registration {
                 .moveFromAField(regPage.nameField);
         Assert.assertTrue(regPage.fieldIsInvalid(regPage.nameField), "Undisguised hyphen is allowed in the name field!");
         Assert.assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
-
     }
 
     @Test(priority = 2)
     public void enteringNonLatinAndSpecCharsToNameField() {
         regPage = mainPage.submitAnUnregNumber();
-        regPage.inputToName("іыцжч!@.\"є'=+&")
+        regPage.waitForRegPageIsLoaded()
+                .inputToName("іыцжч!@.\"є'=+&")
                 .moveFromAField(regPage.nameField);
         Assert.assertEquals(regPage.getValue(regPage.nameField), "", "Something except latin letters is entered to the name field!");
         Assert.assertTrue(regPage.fieldIsInvalid(regPage.nameField));
-        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Invalid border isn't highlighted with red color!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 1)
-    public void uncheckedCheckbox() {
+    public void uncheckedCheckbox() throws InterruptedException {
         mainPage.inputToPhone(regNumber)
                 .uncheckRegChBox()
-                .submitInvalRegForm();
+                .submitInvalRegForm()
+                .waitForReaction();
         try {
             Assert.assertTrue(mainPage.fieldWithCheckboxIsInvalid());
         } catch (NoSuchElementException ex) {
@@ -103,6 +104,9 @@ public class Registration {
                 .waitForReaction();
         try {
             Assert.assertTrue(mainPage.inputIsInvalid());
+            mainPage.submitInvalRegForm()
+                    .waitForReaction();
+            Assert.assertTrue(mainPage.fieldBorderIsRed(mainPage.input), "Border of invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Registration form is submitted", ex);
@@ -155,11 +159,11 @@ public class Registration {
     }
 
 
-    @AfterClass
-    public void teardown() {
-        if (driver != null) {
-            driver.quit();
-        }
-    }
+//    @AfterClass
+//    public void teardown() {
+//        if (driver != null) {
+//            driver.quit();
+//        }
+//    }
 
 }

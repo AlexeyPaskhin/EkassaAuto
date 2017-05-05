@@ -9,8 +9,10 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
  */
 public class RegPage extends AbstractPage {
     private Form regForm;
-    @FindBy(xpath = "//input[@name='name']")
-    WebElement nameField;
+
+    @FindBy(xpath = "//input[@name='name']") WebElement nameField;
+    @FindBy(xpath = "//input[@name='lastName']") WebElement lastNameField;
+    @FindBy (xpath = "//input[@name='email']") WebElement emailField;
 
     public RegPage(WebDriver driver) {
         super(driver);
@@ -25,13 +27,22 @@ public class RegPage extends AbstractPage {
         regForm.set(nameField, text);
         return this;
     }
+    RegPage inputToLastName(String text) {
+        regForm.set(lastNameField, text);
+        return this;
+    }
 
     String getValue(WebElement field) {
         return regForm.getFieldValue(field);
     }
 
-    public RegPage waitForRegPageIsLoaded() {
-        explWait.until(elementToBeClickable(nameField));
+    public RegPage inputToEmailField(String text) {
+        regForm.set(emailField, text);
         return this;
     }
+
+//    public RegPage waitForRegPageIsLoaded() {
+//        explWait.until(elementToBeClickable(nameField));
+//        return this;
+//    }
 }

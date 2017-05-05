@@ -23,11 +23,11 @@ import java.util.concurrent.TimeUnit;
  */
 @Test
 public class Registration {
+    static String regNumber = "222222220";
+    WebDriver.Options options;
     private WebDriver driver;
     private MainPage mainPage;
     private RegPage regPage;
-    WebDriver.Options options;
-    static String regNumber = "222222220";
 
     @BeforeClass
     public void preparation() {
@@ -55,9 +55,42 @@ public class Registration {
 //        regPage = mainPage.submitAnUnregNumber();
     }
 
+    @Test(priority = 3, dataProvider = "emailValidation", dataProviderClass = DataProviders.class)
+    public void negativeValidationOfEmailField(String text) {
+        regPage.inputToEmailField(text)
+                .moveFromAField(regPage.emailField);
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.emailField), "Impermissible characters are allowed at the email field!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.emailField), "Border of invalid field isn't highlighted with red color!");
+    }
+
+    @Test(priority = 3)
+    public void positiveValidationWhileUsingHyphenInLastNameField() {
+        regPage.inputToLastName("a-a")
+                .moveFromAField(regPage.lastNameField);
+        Assert.assertFalse(regPage.fieldIsInvalid(regPage.lastNameField), "Hyphen isn't allowed in the surname field!");
+        Assert.assertFalse(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of valid field is highlighted with red color!");
+    }
+
+    @Test(priority = 3, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
+    public void negativeValidationWhileUsingHyphenInLastNameField(String text) {
+        regPage.inputToLastName(text)
+                .moveFromAField(regPage.lastNameField);
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.lastNameField), "Undisguised hyphen is allowed in the surname field!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
+    }
+
+    @Test(priority = 3)
+    public void enteringNonLatinAndSpecCharsToLastNameField() {
+        regPage.inputToLastName("іыцжч!@.\"є'=+&")
+                .moveFromAField(regPage.lastNameField);
+        Assert.assertEquals(regPage.getValue(regPage.lastNameField), "", "Something except latin letters is entered to the surname field!");
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.lastNameField));
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
+    }
+
     @Test(priority = 3)
     public void positiveValidationWhileUsingHyphenInNameField() {
-        regPage.inputToName("Anna-Maria")
+        regPage.inputToName("An-Mar")
                 .moveFromAField(regPage.nameField);
         Assert.assertFalse(regPage.fieldIsInvalid(regPage.nameField), "Hyphen isn't allowed in the name field!");
         Assert.assertFalse(regPage.fieldBorderIsRed(regPage.nameField), "Border of valid field is highlighted with red color!");
@@ -74,8 +107,7 @@ public class Registration {
     @Test(priority = 2)
     public void enteringNonLatinAndSpecCharsToNameField() {
         regPage = mainPage.submitAnUnregNumber();
-        regPage.waitForRegPageIsLoaded()
-                .inputToName("іыцжч!@.\"є'=+&")
+        regPage.inputToName("іыцжч!@.\"є'=+&")
                 .moveFromAField(regPage.nameField);
         Assert.assertEquals(regPage.getValue(regPage.nameField), "", "Something except latin letters is entered to the name field!");
         Assert.assertTrue(regPage.fieldIsInvalid(regPage.nameField));
@@ -147,14 +179,26 @@ public class Registration {
     }
 
     @Test(priority = 1)
+    public void interactionWithTheLinkLoanInfo() {
+        mainPage.clickLoanInfo();
+        try {
+            Assert.assertTrue(mainPage.mdDialogOfLoanInfo.isDisplayed(), "Loan info isn't displayed!");
+            mainPage.closeDialogWindow()
+                    .waitForClosingLoanInfo();
+        } catch (NoSuchElementException ex) {
+            throw new AssertionError("Info about the loans isn't opened!", ex);
+        }
+    }
+
+    @Test(priority = 1)
     public void accessibilityOfAServiceTermsText() {
         mainPage.clickTheTerms();
         try {
-            Assert.assertTrue(mainPage.mdDialogOfTerms.isDisplayed(), "Terms aren't opened!");
-            mainPage.exitFromTerms()
+            Assert.assertTrue(mainPage.mdDialogOfTerms.isDisplayed(), "Terms aren't displayed!");
+            mainPage.closeDialogWindow()
                     .waitForClosingTerms();
         } catch (NoSuchElementException ex) {
-            throw new AssertionError("Terms aren't displayed!", ex);
+            throw new AssertionError("Terms aren't opened!", ex);
         }
     }
 

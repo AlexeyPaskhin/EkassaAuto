@@ -3,7 +3,10 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
+
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
+
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.TimeUnit;
@@ -12,19 +15,23 @@ import java.util.concurrent.TimeUnit;
  * Created by user on 10.03.2017.
  */
 public class MainPage extends AbstractPage {
-    private Form mainRegForm;
-
     @FindBy(xpath = "//input[@name='phone']")
     protected WebElement input;
-    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
-    private WebElement mainRegCheckbox;
     @FindBy(xpath = "//*[@type='submit']")
     protected WebElement submitLoanButton;
+    @CacheLookup
+    @FindBy(xpath = "//md-dialog[@aria-label='Wyrażam zgodę ...']")
+    protected WebElement mdDialogOfTerms;
+    @CacheLookup
+    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']")
+    protected WebElement mdDialogOfLoanInfo;
+    private Form mainRegForm;
+    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
+    private WebElement mainRegCheckbox;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
     private WebElement linkTerms;
-    @CacheLookup
-    @FindBy(xpath = "//md-dialog[@class='p-15 _md md-dialog-fullscreen md-transition-in']")
-    protected WebElement mdDialogOfTerms;
+    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']")
+    private WebElement linkLoanInfo;
 
 
     MainPage(WebDriver driver) {
@@ -55,6 +62,8 @@ public class MainPage extends AbstractPage {
         mainRegForm.set(input, Registration.regNumber)
                 .markCheckBox(mainRegCheckbox)
                 .submit();
+        explWait.until(presenceOfElementLocated(By.xpath("//input[@name='name']")));
+        explWait.until(elementToBeClickable(By.xpath("//input[@name='name']")));
         return new RegPage(driver);
     }
 
@@ -93,10 +102,17 @@ public class MainPage extends AbstractPage {
 
     MainPage clickTheTerms() {
         linkTerms.click();
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Wyrażam zgodę ...']")));
         return this;
     }
 
-    MainPage exitFromTerms() {
+    MainPage clickLoanInfo() {
+        linkLoanInfo.click();
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Chwilówka w ...']")));
+        return this;
+    }
+
+    MainPage closeDialogWindow() {
         findWithXPath("//body").sendKeys(Keys.ESCAPE);
         return this;
     }
@@ -104,11 +120,16 @@ public class MainPage extends AbstractPage {
     void waitForReaction() throws InterruptedException {
         Thread.sleep(1000);
         explWait.until(or(elementToBeClickable(submitLoanButton),
-                elementToBeClickable(By.xpath("(//div[@class='fb-login-button fb_iframe_widget'])"))));
+                elementToBeClickable(By.xpath("//input[@name='name']"))));
     }
 
     MainPage waitForClosingTerms() {
         explWait.until(invisibilityOf(mdDialogOfTerms));
+        return this;
+    }
+
+    MainPage waitForClosingLoanInfo() {
+        explWait.until(invisibilityOf(mdDialogOfLoanInfo));
         return this;
     }
 

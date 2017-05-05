@@ -13,4 +13,23 @@ public class DataProviders {
         };
 
     }
+
+    @DataProvider(name = "emailValidation")
+    public static Object[][] emailNonValid() {
+        return new Object[][]{
+                {"a.paskhin1 @gmail.com"},
+                {" a.paskhin1@gmail.com"},
+                {"a.paskhin1@gmail.com  "},
+                {"a.paskhin1@@gmail.com"},
+                {"a.paskhin1gmail.com"},
+                {"a.paskhin1@gmailcom"},
+                {"ыa.paskhin1@gmail.com"},
+                {"apaskhin1.gmail@com"},
+                {"a.paskhin1@gmail.commm"},
+                {"a.paskhin1@gmail.c"},
+                {"a.paskhin1@gmail..com"},
+                {"a.paskhin1@gmail.сщь"},
+                {"a.paskhin1@gmail.com-"}
+        };
+    }
 }

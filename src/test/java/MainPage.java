@@ -7,6 +7,7 @@ import org.openqa.selenium.support.FindBy;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.TimeUnit;
@@ -48,7 +49,7 @@ public class MainPage extends AbstractPage {
         mainRegForm = new Form(findWithXPath("//form"));
     }
 
-    MainPage submitInvalRegForm() {
+    MainPage submitInvalPDLForm() {
         mainRegForm.submit();
         return this;
     }
@@ -62,7 +63,8 @@ public class MainPage extends AbstractPage {
         mainRegForm.set(input, Registration.regNumber)
                 .markCheckBox(mainRegCheckbox)
                 .submit();
-        explWait.until(presenceOfElementLocated(By.xpath("//input[@name='name']")));
+        explWait.until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 0));
+//        explWait.until(presenceOfElementLocated(By.xpath("//input[@name='name']")));
         explWait.until(elementToBeClickable(By.xpath("//input[@name='name']")));
         return new RegPage(driver);
     }
@@ -72,12 +74,12 @@ public class MainPage extends AbstractPage {
         return new PasswordPage(driver);
     }
 
-    MainPage markRegCheckbox() {
+    MainPage markPDLCheckbox() {
         mainRegForm.markCheckBox(mainRegCheckbox);
         return this;
     }
 
-    MainPage uncheckRegChBox() {
+    MainPage uncheckPDLChBox() {
         mainRegForm.uncheck(mainRegCheckbox);
         return this;
     }

@@ -1,3 +1,4 @@
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -13,6 +14,11 @@ public class RegPage extends AbstractPage {
     @FindBy(xpath = "//input[@name='name']") WebElement nameField;
     @FindBy(xpath = "//input[@name='lastName']") WebElement lastNameField;
     @FindBy (xpath = "//input[@name='email']") WebElement emailField;
+    @FindBy(xpath = "//input[@name='password']") WebElement passwordField;
+    @FindBy(xpath = "//input[@name='passwordConfirm']") WebElement passConfirmField;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") WebElement termsCheckBox;
+    @FindBy(xpath = "//button[@type='submit']") WebElement regButton;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") WebElement linkRegTerms;
 
     public RegPage(WebDriver driver) {
         super(driver);
@@ -41,8 +47,43 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-//    public RegPage waitForRegPageIsLoaded() {
-//        explWait.until(elementToBeClickable(nameField));
-//        return this;
-//    }
+    public RegPage inputToPasswordField(String text) {
+        regForm.set(passwordField, text);
+        return this;
+    }
+
+    public RegPage inputToPassConfirmField(String pass) {
+        regForm.set(passConfirmField, pass);
+        return this;
+    }
+
+    RegPage fillRegFormWithValidData() {
+        inputToName(Registration.name)
+                .inputToLastName(Registration.surname)
+                .inputToEmailField(Registration.email)
+                .inputToPasswordField(Registration.password)
+                .inputToPassConfirmField(Registration.password);
+        return this;
+    }
+
+    RegPage markRegCheckbox() {
+        regForm.markCheckBox(termsCheckBox);
+        return this;
+    }
+
+    RegPage unmarkRegCheckbox() {
+        regForm.uncheck(termsCheckBox);
+        return this;
+    }
+
+    RegPage submitInvalRegForm(){
+        regForm.submit(regButton);
+        return this;
+    }
+
+    public void waitForReaction() throws InterruptedException {
+        Thread.sleep(1000);
+        explWait.until(or(elementToBeClickable(regButton),
+                elementToBeClickable(By.xpath("//input[@name='smsVerificationCode']"))));
+    }
 }

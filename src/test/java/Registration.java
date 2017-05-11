@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Test
 public class Registration {
-    static String regNumber = "222222220";
+    static String regNumber = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin1@gmail.com", password = "111111a";
     WebDriver.Options options;
     private WebDriver driver;
     private MainPage mainPage;
@@ -49,10 +49,68 @@ public class Registration {
 //        driver = new FirefoxDriver();
         driver = new ChromeDriver();
         options = driver.manage();
-        options.timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         options.window().maximize();
         mainPage = new MainPage(driver);
 //        regPage = mainPage.submitAnUnregNumber();
+    }
+
+    @Test(priority = 3)
+    public void submittingRegFormWithUnmarkedCheckbox() throws InterruptedException {
+        regPage.fillRegFormWithValidData()
+                .unmarkRegCheckbox()
+                .submitInvalRegForm()
+                .waitForReaction();
+        try {
+            Assert.assertTrue(regPage.fieldIsInvalid(regPage.termsCheckBox));
+            Assert.assertTrue(regPage.elementIsRed(regPage.linkRegTerms));
+        } catch (NoSuchElementException ex) {
+            driver.navigate().back();
+            throw new AssertionError("Unfilled registration form is submitted", ex);
+        }
+    }
+
+    @Test(priority = 3)
+    public void validationOfPasswordConfirmationField() {
+        regPage.inputToPasswordField(password)
+                .inputToPassConfirmField(password + "a")
+                .moveFromAField(regPage.passConfirmField);
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.passConfirmField), "Password confirmation field is valid while its value isn't equal to password field!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.passConfirmField), "Border of invalid field isn't highlighted with red color!");
+        regPage.inputToPassConfirmField(password)
+                .moveFromAField(regPage.passConfirmField);
+        Assert.assertFalse(regPage.fieldIsInvalid(regPage.passConfirmField), "Password confirmation field is invalid while its value is equal to password field!");
+        Assert.assertFalse(regPage.fieldBorderIsRed(regPage.passConfirmField), "Border of valid field is highlighted with red color!");
+    }
+
+    @Test(priority = 3)
+    public void positiveValidationOfPasswordField() {
+        regPage.inputToPasswordField("1q\\%[`")
+                .moveFromAField(regPage.passwordField);
+        System.out.println(regPage.getValue(regPage.passwordField));
+        Assert.assertEquals(regPage.getValue(regPage.passwordField), "1q\\%[`", "Wrong data input to password field!");
+        Assert.assertFalse(regPage.fieldIsInvalid(regPage.passwordField), "Permissible characters aren't allowed at the password field!");
+        Assert.assertFalse(regPage.fieldBorderIsRed(regPage.passwordField), "Border of valid field is highlighted with red color!");
+    }
+
+    @Test(priority = 3, dataProvider = "passwordValidation", dataProviderClass = DataProviders.class)
+    public void negativeValidationOfPasswordField(String password) {
+        regPage.inputToPasswordField(password)
+                .moveFromAField(regPage.passwordField);
+        System.out.println(regPage.getValue(regPage.passwordField));
+        Assert.assertEquals(regPage.getValue(regPage.passwordField), password, "Wrong data input to password field!");
+        Assert.assertTrue(regPage.fieldIsInvalid(regPage.passwordField), "Impermissible characters are allowed at the password field!");
+        Assert.assertTrue(regPage.fieldBorderIsRed(regPage.passwordField), "Border of invalid field isn't highlighted with red color!");
+    }
+
+    @Test(priority = 3)
+    //видимо селениум видоизменяет кириллицу после "@" в малопонятные символы, поэтому будем считать, что ожидаем вводимую букву увидеть такой, как написано в "expected"
+    public void positiveValidationOfEmailField() {
+        regPage.inputToEmailField("a.paskhin-@gmail-ы.coms")
+                .moveFromAField(regPage.emailField);
+        Assert.assertEquals(regPage.getValue(regPage.emailField), "a.paskhin-@xn--gmail--ntf.coms", "Wrong data input to email field!");
+        Assert.assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
+        Assert.assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 3, dataProvider = "emailValidation", dataProviderClass = DataProviders.class)
@@ -117,31 +175,31 @@ public class Registration {
     @Test(priority = 1)
     public void uncheckedCheckbox() throws InterruptedException {
         mainPage.inputToPhone(regNumber)
-                .uncheckRegChBox()
-                .submitInvalRegForm()
+                .uncheckPDLChBox()
+                .submitInvalPDLForm()
                 .waitForReaction();
         try {
             Assert.assertTrue(mainPage.fieldWithCheckboxIsInvalid());
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
-            throw new AssertionError("Registration form is submitted", ex);
+            throw new AssertionError("PDL form is submitted", ex);
         }
     }
 
     @Test(priority = 1)
     public void submittingWhenPhoneIsBlank() throws InterruptedException {
-        mainPage.markRegCheckbox()
+        mainPage.markPDLCheckbox()
                 .inputToPhone("")
-                .submitInvalRegForm()
+                .submitInvalPDLForm()
                 .waitForReaction();
         try {
             Assert.assertTrue(mainPage.inputIsInvalid());
-            mainPage.submitInvalRegForm()
+            mainPage.submitInvalPDLForm()
                     .waitForReaction();
             Assert.assertTrue(mainPage.fieldBorderIsRed(mainPage.input), "Border of invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
-            throw new AssertionError("Registration form is submitted", ex);
+            throw new AssertionError("PDL form is submitted", ex);
         }
     }
 
@@ -150,15 +208,15 @@ public class Registration {
     public void incompletePhoneNumber() throws InterruptedException {
         mainPage.inputToPhone("22222222");
         String def = mainPage.getValueFromPhoneInput();
-        mainPage.markRegCheckbox()
-                .submitInvalRegForm()
+        mainPage.markPDLCheckbox()
+                .submitInvalPDLForm()
                 .waitForReaction();
         try {
             Assert.assertTrue(mainPage.inputIsInvalid());
             Assert.assertEquals(mainPage.getValueFromPhoneInput(), def, "Digits are deleted from input");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
-            throw new AssertionError("Registration form is submitted", ex);
+            throw new AssertionError("PDL form is submitted", ex);
         }
     }
 
@@ -167,14 +225,14 @@ public class Registration {
         String def = mainPage.getValueFromPhoneInput();
         mainPage.inputToPhone("qwe ы!@-");
         Assert.assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
-        mainPage.markRegCheckbox()
-                .submitInvalRegForm()
+        mainPage.markPDLCheckbox()
+                .submitInvalPDLForm()
                 .waitForReaction();
         try {
             Assert.assertTrue(mainPage.inputIsInvalid());
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
-            throw new AssertionError("Registration form is submitted", ex);
+            throw new AssertionError("PDL form is submitted", ex);
         }
     }
 
@@ -203,11 +261,11 @@ public class Registration {
     }
 
 
-//    @AfterClass
-//    public void teardown() {
-//        if (driver != null) {
-//            driver.quit();
-//        }
-//    }
+    @AfterClass
+    public void teardown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
 
 }

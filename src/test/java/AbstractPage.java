@@ -1,4 +1,5 @@
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -43,4 +44,8 @@ public abstract class AbstractPage {
         return field.getCssValue("border-color").equals("rgb(221, 44, 0)");
     }
 
+    public boolean elementIsRed(WebElement element) {
+//        System.out.println(element.getCssValue("color"));
+        return element.getCssValue("color").equals("rgba(255, 0, 0, 1)");
+    }
 }

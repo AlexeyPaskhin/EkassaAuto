@@ -11,14 +11,13 @@ public class DataProviders {
                 {"kek-"},
                 {"-roock"},
         };
-
     }
 
     @DataProvider(name = "emailValidation")
     public static Object[][] emailNonValid() {
         return new Object[][]{
                 {"a.paskhin1 @gmail.com"},
-                {" a.paskhin1@gmail.com"},
+                {"   a.paskhin1@gmail.com"},
                 {"a.paskhin1@gmail.com  "},
                 {"a.paskhin1@@gmail.com"},
                 {"a.paskhin1gmail.com"},
@@ -30,6 +29,18 @@ public class DataProviders {
                 {"a.paskhin1@gmail..com"},
                 {"a.paskhin1@gmail.сщь"},
                 {"a.paskhin1@gmail.com-"}
+        };
+    }
+
+    @DataProvider
+    public static Object[][] passwordValidation() {
+        return new Object[][]{
+                {"1234q"},
+                {"12345ыц"},
+                {"qwerty"},
+                {"123456"},
+                {"123 456q"},
+                {" 123456q "}
         };
     }
 }

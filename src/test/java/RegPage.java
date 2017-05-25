@@ -19,6 +19,8 @@ public class RegPage extends AbstractPage {
     @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") WebElement termsCheckBox;
     @FindBy(xpath = "//button[@type='submit']") WebElement regButton;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") WebElement linkRegTerms;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']") WebElement marketingCheckbox;
+    @FindBy(xpath = "//span[@ng-click='showMarketingAgreements($event)']") WebElement linkMarketingTerms;
 
     public RegPage(WebDriver driver) {
         super(driver);
@@ -66,6 +68,15 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
+    RegPage setBlankValuesToRegForm() {
+        inputToName("")
+                .inputToLastName("")
+                .inputToEmailField("")
+                .inputToPasswordField("")
+                .inputToPassConfirmField("");
+        return this;
+    }
+
     RegPage markRegCheckbox() {
         regForm.markCheckBox(termsCheckBox);
         return this;
@@ -85,5 +96,20 @@ public class RegPage extends AbstractPage {
         Thread.sleep(1000);
         explWait.until(or(elementToBeClickable(regButton),
                 elementToBeClickable(By.xpath("//input[@name='smsVerificationCode']"))));
+    }
+
+    public RegPage clickRegTerms() {
+        linkRegTerms.click();
+        return this;
+    }
+
+    public RegPage waitForClosingTerms() {
+        explWait.until(invisibilityOfElementLocated(By.xpath("//md-dialog")));
+        return this;
+    }
+
+    public RegPage clickMarketingTerms() {
+        linkMarketingTerms.click();
+        return this;
     }
 }

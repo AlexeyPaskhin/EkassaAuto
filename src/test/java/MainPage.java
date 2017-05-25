@@ -16,23 +16,16 @@ import java.util.concurrent.TimeUnit;
  * Created by user on 10.03.2017.
  */
 public class MainPage extends AbstractPage {
-    @FindBy(xpath = "//input[@name='phone']")
-    protected WebElement input;
-    @FindBy(xpath = "//*[@type='submit']")
-    protected WebElement submitLoanButton;
-    @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Wyrażam zgodę ...']")
-    protected WebElement mdDialogOfTerms;
-    @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']")
-    protected WebElement mdDialogOfLoanInfo;
     private Form mainRegForm;
-    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
-    private WebElement mainRegCheckbox;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
-    private WebElement linkTerms;
-    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']")
-    private WebElement linkLoanInfo;
+    @FindBy(xpath = "//input[@name='phone']") protected WebElement input;
+    @FindBy(xpath = "//*[@type='submit']") protected WebElement submitLoanButton;
+    @CacheLookup
+    @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
+    @CacheLookup
+    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']") protected WebElement mdDialogOfLoanInfo;
+    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement mainRegCheckbox;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") protected WebElement linkTerms;
+    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']") private WebElement linkLoanInfo;
 
 
     MainPage(WebDriver driver) {
@@ -104,18 +97,13 @@ public class MainPage extends AbstractPage {
 
     MainPage clickTheTerms() {
         linkTerms.click();
-        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Wyrażam zgodę ...']")));
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 
     MainPage clickLoanInfo() {
         linkLoanInfo.click();
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Chwilówka w ...']")));
-        return this;
-    }
-
-    MainPage closeDialogWindow() {
-        findWithXPath("//body").sendKeys(Keys.ESCAPE);
         return this;
     }
 
@@ -126,7 +114,7 @@ public class MainPage extends AbstractPage {
     }
 
     MainPage waitForClosingTerms() {
-        explWait.until(invisibilityOf(mdDialogOfTerms));
+        explWait.until(invisibilityOf(mdDialogOfAccessToPersData));
         return this;
     }
 

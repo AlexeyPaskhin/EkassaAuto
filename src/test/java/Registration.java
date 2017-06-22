@@ -1,25 +1,17 @@
-import com.google.sitebricks.http.As;
+//import database.dao.UserCredentialsDAO;
+import database.PersistenceManager;
+import database.dao.UserCredentialsDAO;
+import database.entities.UserCredential;
 import io.github.bonigarcia.wdm.*;
-import net.lightbody.bmp.proxy.ProxyServer;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.ie.InternetExplorerDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import javax.persistence.EntityManager;
+import java.sql.SQLException;
+import java.util.List;
 
 import static org.testng.Assert.*;
 
@@ -30,12 +22,17 @@ import static org.testng.Assert.*;
 public class Registration {
     static String regNumber = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin1@gmail.com", password = "111111a";
     WebDriver.Options options;
+//    UserCredentialsDAO userCredentialsDAO = new UserCredentialsDAO();
     private WebDriver driver;
     private MainPage mainPage;
     private RegPage regPage;
+    private UserCredentialsDAO userCredentialsDAO;
 
     @BeforeClass
     public void preparation() {
+        PersistenceManager persistenceManager = new PersistenceManager();
+        EntityManager entityManager = persistenceManager.getEntityManager();
+        userCredentialsDAO = new UserCredentialsDAO(entityManager);
 //        String property = System.getProperty("user.dir") + "/drivers/chromedriver.exe";
 //        System.setProperty("webdriver.chrome.driver", property);
         ChromeDriverManager.getInstance().setup();
@@ -52,22 +49,39 @@ public class Registration {
 //        capabilities.setCapability(CapabilityType.PROXY, proxy);
 //        driver = new ChromeDriver(capabilities);
 //        driver = new FirefoxDriver();
-        driver = new ChromeDriver();
-        options = driver.manage();
-        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-        options.window().maximize();
-        mainPage = new MainPage(driver);
+
+//        driver = new ChromeDriver();
+//        options = driver.manage();
+//        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+//        options.window().maximize();
+//        mainPage = new MainPage(driver);
+
 //        regPage = mainPage.submitAnUnregNumber();
     }
 
+    @Test
+    public void dataBaseTest() {
+        try {
+            List<UserCredential> userCredentials = userCredentialsDAO.getUserByPhone("222222222");
+            System.out.println(userCredentials);
+            for(UserCredential userCredential : userCredentials) {
+                System.out.println(userCredential.getPlainUser().getEmail());
+                System.out.println(userCredential.getPlainUser().getLastName());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test(priority = 3)
-    public void submittingBlankRegForm() {
+    public void submittingBlankRegForm() throws InterruptedException {
         regPage.setBlankValuesToRegForm()
-                .submitInvalRegForm();
+                .submitInvalRegForm()
+                .waitForReaction();
         WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField, regPage.passwordField, regPage.passConfirmField};
-        try{
+        try {
             for (WebElement el : regInputs)
-                assertTrue(regPage.fieldBorderIsRed(el));
+                assertTrue(regPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " don't have red color!");
         } catch (NoSuchElementException e) {
             mainPage = new MainPage(driver);
             regPage = mainPage.submitAnUnregNumber();
@@ -76,19 +90,20 @@ public class Registration {
     }
 
     @Test(priority = 3)
-    public void equalityValidationOfPasswordsWhileEditingMainPassField() {
+    public void equalityValidationOfPasswordsWhileEditingMainPassField() throws InterruptedException {
         regPage.fillRegFormWithValidData()
-                .inputToPasswordField(password+"a")
+                .inputToPasswordField(password + "a")
                 .moveFromAField(regPage.passwordField);   //этот шаг необязательный, но селениум слишком быстро проверяет цвет и приходится что то еще сделать))
         assertTrue(regPage.fieldBorderIsRed(regPage.passConfirmField));
-        regPage.submitInvalRegForm();
+        regPage.submitInvalRegForm()
+                .waitForReaction();
         assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(), 1, "Error message isn't displayed!");
     }
 
     @Test(priority = 3)
     public void accessibilityOfConcessionToEmailsText() {
         regPage.clickMarketingTerms();
-        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").size(),  1,"Terms aren't opened!");
+        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").size(), 1, "Terms aren't opened!");
         assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").isDisplayed(), "Terms aren't displayed!");
         regPage.closeDialogWindow();
         regPage.waitForClosingTerms();
@@ -97,7 +112,7 @@ public class Registration {
     @Test(priority = 3)
     public void accessibilityOfARegTermsText() {
         regPage.clickRegTerms();
-        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(), 1,"Terms aren't opened!");
+        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(), 1, "Terms aren't opened!");
         assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(), "Terms aren't displayed!");
         regPage.closeDialogWindow();
         regPage.waitForClosingTerms();
@@ -218,11 +233,12 @@ public class Registration {
     }
 
     @Test(priority = 2)
-    public void successfulSubmittingPdlForm() {
+    public void successfulSubmittingPdlForm() throws SQLException {
         regPage = mainPage.submitAnUnregNumber();
+        List<UserCredential> userCredentials = userCredentialsDAO.getUserByPhone("222222222");
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
-            if (el.isDisplayed()) countVisElems ++;
+            if (el.isDisplayed()) countVisElems++;
         }
         assertEquals(countVisElems, 5, "Not each input element is displayed!");
         assertTrue(regPage.CheckboxIsMarked(regPage.marketingCheckbox));
@@ -279,7 +295,8 @@ public class Registration {
 
     @Test(priority = 1)
     public void enteringLettersAndSymbolsToPhone() throws InterruptedException {
-        String def = mainPage.getValueFromPhoneInput();
+        String def = mainPage.waitPhonePdlInputIsAccessible()
+                .getValueFromPhoneInput();
         mainPage.inputToPhone("qwe ы!@-");
         assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
         mainPage.markPDLCheckbox()

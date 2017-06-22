@@ -32,7 +32,7 @@ public class MainPage extends AbstractPage {
         super(driver);
         driver.get("http://test.ekassa.com");
         waitForOpennessOfCalc();
-        if (!"EKassa - Szybka Pożyczka Przez Internet".equals(driver.getTitle())) {
+        if (!"Pożyczki na raty: chwilówki ratalne online - Ekassa".equals(driver.getTitle())) {
             throw new IllegalStateException("This is not the main page");
         }
         initPageElements();
@@ -123,8 +123,13 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-    public MainPage waitForOpennessOfCalc() {
+    MainPage waitForOpennessOfCalc() {
         explWait.until(invisibilityOf(findWithXPath("//div[text()='Chwilówki']")));
+        return this;
+    }
+
+    MainPage waitPhonePdlInputIsAccessible() {
+        explWait.until(elementToBeClickable(input));
         return this;
     }
 }

@@ -1,9 +1,8 @@
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import java.util.List;
 
@@ -35,7 +34,6 @@ public abstract class AbstractPage {
         WebElement el = driver.findElement(By.cssSelector(text));
         return el;
     }
-
 
     public boolean fieldIsInvalid(WebElement field){
         return field.getAttribute("class").contains("invalid");
@@ -71,5 +69,14 @@ public abstract class AbstractPage {
 
     public boolean CheckboxIsMarked(WebElement checkbox) {
         return checkbox.getAttribute("aria-checked").equals("true");
+    }
+
+    public void waitForPerformingJS() {
+        try {   // try - на случай, если js в каком то кейсе не начал выполнятся, попытка перехода на другую страницу не произвелась
+            new WebDriverWait(driver, 1).until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 1));
+        } catch (TimeoutException e) {
+            return;
+        }
+        explWait.until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 0));
     }
 }

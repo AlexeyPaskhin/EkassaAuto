@@ -13,9 +13,10 @@ public class UserCredential {
     private Long id;
     private String password;
     private String phone;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "plain_user_id",nullable = false)
-    private PlainUserEntity plainUser;
+    private PlainUserEntity plainUserEntity;
 
 
     public Long getId() {
@@ -42,12 +43,13 @@ public class UserCredential {
         this.phone = phone;
     }
 
-    public PlainUserEntity getPlainUser() {
-        return plainUser;
+
+    public PlainUserEntity getPlainUserEntity() {
+        return plainUserEntity;
     }
 
-    public void setPlainUser(PlainUserEntity plainUser) {
-        this.plainUser = plainUser;
+    public void setPlainUserEntity(PlainUserEntity plainUserEntity) {
+        this.plainUserEntity = plainUserEntity;
     }
 
     @Override

@@ -1,10 +1,11 @@
-//import database.dao.UserCredentialsDAO;
 import database.PersistenceManager;
 import database.dao.UserCredentialsDAO;
+import database.dao.PlainUsersDAO;
 import database.entities.UserCredential;
 import io.github.bonigarcia.wdm.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -12,6 +13,7 @@ import org.testng.annotations.Test;
 import javax.persistence.EntityManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.*;
 
@@ -20,22 +22,22 @@ import static org.testng.Assert.*;
  */
 @Test
 public class Registration {
-    static String regNumber = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin1@gmail.com", password = "111111a";
+    static String regPhone = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin@gmail.com", password = "111111a";
     WebDriver.Options options;
-//    UserCredentialsDAO userCredentialsDAO = new UserCredentialsDAO();
     private WebDriver driver;
     private MainPage mainPage;
     private RegPage regPage;
-    private UserCredentialsDAO userCredentialsDAO;
+    private SmsVerificationPage smsVerificationPage;
+    static UserCredentialsDAO userCredentialsDAO;
+    private PlainUsersDAO plainUsersDAO;
 
     @BeforeClass
     public void preparation() {
-        PersistenceManager persistenceManager = new PersistenceManager();
-        EntityManager entityManager = persistenceManager.getEntityManager();
+        EntityManager entityManager = (new PersistenceManager()).getEntityManager();
         userCredentialsDAO = new UserCredentialsDAO(entityManager);
+        plainUsersDAO = new PlainUsersDAO(entityManager);
 //        String property = System.getProperty("user.dir") + "/drivers/chromedriver.exe";
 //        System.setProperty("webdriver.chrome.driver", property);
-        ChromeDriverManager.getInstance().setup();
 //        InternetExplorerDriverManager.getInstance().setup();
 //        OperaDriverManager.getInstance().forceCache().setup();
 //        EdgeDriverManager.getInstance().setup();
@@ -49,35 +51,64 @@ public class Registration {
 //        capabilities.setCapability(CapabilityType.PROXY, proxy);
 //        driver = new ChromeDriver(capabilities);
 //        driver = new FirefoxDriver();
-
-//        driver = new ChromeDriver();
-//        options = driver.manage();
-//        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-//        options.window().maximize();
-//        mainPage = new MainPage(driver);
+        ChromeDriverManager.getInstance().setup();
+        driver = new ChromeDriver();
+        options = driver.manage();
+        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        options.window().maximize();
+        mainPage = new MainPage(driver);
 
 //        regPage = mainPage.submitAnUnregNumber();
     }
 
-    @Test
-    public void dataBaseTest() {
+//    @Test
+//    public void dataBaseTest() {
+//        try {
+//            List<UserCredential> userCredentials = userCredentialsDAO.getUserByPhone("222222222");
+//            System.out.println(userCredentials);
+//            for(UserCredential userCredential : userCredentials) {
+//                System.out.println(userCredential.getPlainUserEntity().getEmail());
+//                System.out.println(userCredential.getPlainUserEntity().getLastName());
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    @Test(priority = 4)
+    public void visibilityOfSmsCodeField() {
+        regPage.fillRegFormWithValidData()
+                .markRegCheckbox();
+        smsVerificationPage = regPage.submitValidRegForm();
+        assertTrue(smsVerificationPage.smsCodeSubmitButton.isDisplayed(), "The block for sms code isn't displayed!");
+    }
+
+    @Test(priority = 3)
+    public void registrationWithEarlierUsedEmail() {
+        regPage.fillRegFormWithValidData()
+                .markRegCheckbox()
+                .inputToEmailField(plainUsersDAO.getRegisteredEmail())
+                .submitInvalRegForm()
+                .waitForPerformingJS();
+        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField, regPage.passwordField, regPage.passConfirmField};
         try {
-            List<UserCredential> userCredentials = userCredentialsDAO.getUserByPhone("222222222");
-            System.out.println(userCredentials);
-            for(UserCredential userCredential : userCredentials) {
-                System.out.println(userCredential.getPlainUser().getEmail());
-                System.out.println(userCredential.getPlainUser().getLastName());
+            for (WebElement el : regInputs) {
+                assertTrue(el.isDisplayed());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (NoSuchElementException e) {
+            mainPage = new MainPage(driver);
+            regPage = mainPage.submitAnUnregNumber();
+            throw new AssertionError("Registration form with already registered email was submitted");
         }
+        assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Użytkownik z tym e-mail jest już zarejestrowany')]").size(),
+                1, "Error message isn't displayed!");
     }
 
     @Test(priority = 3)
     public void submittingBlankRegForm() throws InterruptedException {
         regPage.setBlankValuesToRegForm()
                 .submitInvalRegForm()
-                .waitForReaction();
+                .waitForPerformingJS();
         WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField, regPage.passwordField, regPage.passConfirmField};
         try {
             for (WebElement el : regInputs)
@@ -234,8 +265,15 @@ public class Registration {
 
     @Test(priority = 2)
     public void successfulSubmittingPdlForm() throws SQLException {
+        List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
+        if (requestedUserCredentials.size()==1) {
+            userCredentialsDAO.deleteUserByPhone(regPhone);
+        }
+        else if (requestedUserCredentials.size() > 1) {
+            throw new AssertionError("There are more than 1 unique phone number located in the Usercredentials table!");
+        }
+
         regPage = mainPage.submitAnUnregNumber();
-        List<UserCredential> userCredentials = userCredentialsDAO.getUserByPhone("222222222");
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
@@ -246,7 +284,7 @@ public class Registration {
 
     @Test(priority = 1)
     public void uncheckedCheckbox() throws InterruptedException {
-        mainPage.inputToPhone(regNumber)
+        mainPage.inputToPhone(regPhone)
                 .uncheckPDLChBox()
                 .submitInvalPDLForm()
                 .waitForReaction();
@@ -353,6 +391,12 @@ public class Registration {
         } catch (NoSuchElementException ex) {
             throw new AssertionError("Terms aren't opened!", ex);
         }
+    }
+
+    @Test(priority = 1)
+    public void inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent() {
+        assertEquals(mainPage.submitPDLButton.getText(), "DALEJ");
+        assertEquals(mainPage.submitConsButton.getText(), "DALEJ");
     }
 
 

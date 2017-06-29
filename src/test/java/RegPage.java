@@ -1,3 +1,4 @@
+import database.dao.UserCredentialsDAO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -65,6 +66,9 @@ public class RegPage extends AbstractPage {
                 .inputToEmailField(Registration.email)
                 .inputToPasswordField(Registration.password)
                 .inputToPassConfirmField(Registration.password);
+        if(Registration.userCredentialsDAO.getUserByEmail(Registration.email).size()>0) {
+            Registration.userCredentialsDAO.deleteUserByEmail(Registration.email);
+        }
         return this;
     }
 
@@ -92,6 +96,11 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
+    public SmsVerificationPage submitValidRegForm() {
+        regForm.submit(regButton);
+        return new SmsVerificationPage(driver);
+    }
+
     public void waitForReaction() throws InterruptedException {
         Thread.sleep(1000);
         explWait.until(or(elementToBeClickable(regButton),
@@ -112,4 +121,6 @@ public class RegPage extends AbstractPage {
         linkMarketingTerms.click();
         return this;
     }
+
+
 }

@@ -1,16 +1,11 @@
-package database.dao;
+package com.ekassaauto.database.dao;
 
-import database.DBUtils;
-import database.PersistenceManager;
-import database.entities.UserCredential;
+import com.ekassaauto.database.entities.UserCredential;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,18 +18,26 @@ public class UserCredentialsDAO {
         this.entityManager = entityManager;
     }
 
+    public Boolean getStateOfMarketingDistributionByPhone(String phone) {
+        TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone =:phone",
+                UserCredential.class);
+        query.setParameter("phone", phone);
+        UserCredential userCredential = query.getSingleResult();
+        return userCredential.getPlainUserEntity().getMarketingDistribution();
+    }
+
     public List<UserCredential> getUserByPhone(String phone) throws SQLException {
         Query query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone =:phone");
-        query.setParameter("phone",phone);
+        query.setParameter("phone", phone);
         return query.getResultList();
     }
 
     public void deleteUserByPhone(String regPhone) {
         entityManager.getTransaction().begin();
-        TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone = :regPhone",UserCredential.class);
+        TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone = :regPhone",
+                UserCredential.class);
         query.setParameter("regPhone", regPhone);
         UserCredential userCredential = query.getSingleResult();
-//        userCredential.getPhone();
 //        System.out.println(userCredential);
         entityManager.remove(userCredential);
         entityManager.getTransaction().commit();
@@ -42,7 +45,8 @@ public class UserCredentialsDAO {
     }
 
     public List<UserCredential> getUserByEmail(String email) {
-        Query query = entityManager.createQuery("select users from UserCredential users inner join users.plainUserEntity pue where pue.email = :email", UserCredential.class);
+        Query query = entityManager.createQuery("select users from UserCredential users inner join users.plainUserEntity pue where pue.email = :email",
+                UserCredential.class);
         query.setParameter("email", email);
         List<UserCredential> resultList = query.getResultList();
         return resultList;
@@ -50,7 +54,8 @@ public class UserCredentialsDAO {
 
     public void deleteUserByEmail(String email) {
         entityManager.getTransaction().begin();
-        Query query = entityManager.createQuery("select uc from UserCredential uc inner join uc.plainUserEntity pue where pue.email = :email", UserCredential.class);
+        Query query = entityManager.createQuery("select uc from UserCredential uc inner join uc.plainUserEntity pue where pue.email = :email",
+                UserCredential.class);
         query.setParameter("email", email);
         List<UserCredential> resultList = query.getResultList();
         resultList.forEach(entityManager::remove);

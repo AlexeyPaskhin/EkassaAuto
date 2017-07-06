@@ -1,8 +1,9 @@
-import database.PersistenceManager;
-import database.dao.SentSmsDAO;
-import database.dao.UserCredentialsDAO;
-import database.dao.PlainUsersDAO;
-import database.entities.UserCredential;
+package com.ekassaauto;
+
+import com.ekassaauto.database.PersistenceManager;
+import com.ekassaauto.database.dao.SentSmsDAO;
+import com.ekassaauto.database.dao.UserCredentialsDAO;
+import com.ekassaauto.database.dao.PlainUsersDAO;
 import io.github.bonigarcia.wdm.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
@@ -11,7 +12,6 @@ import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.*;
@@ -26,6 +26,8 @@ public class Registration {
     private WebDriver driver;
     static MainPage mainPage;
     static RegPage regPage;
+    static AboutMePage aboutMePage;
+    static MyProfilePage myProfilePage;
     static SmsVerificationPage smsVerificationPage;
     static UserCredentialsDAO userCredentialsDAO;
     private PlainUsersDAO plainUsersDAO;
@@ -64,8 +66,8 @@ public class Registration {
         options.window().maximize();
         mainPage = new MainPage(driver);
 
-        regPage = mainPage.submitAnUnregNumber();
-        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+//        regPage = mainPage.submitAnUnregNumber();
+//        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
     }
 
 //    @Test
@@ -82,7 +84,44 @@ public class Registration {
 //        }
 //    }
 
-    @Test(priority = 5)
+    @Test(priority = 9)
+    public void submittingRegFormWithUnmarkedConcessionToEmailsCheckbox() {
+
+        aboutMePage = regPage.goToNewRegPage()
+                .unmarkMarketingCheckbox()
+                .submitRegFormWithVerifiedData()
+                .submitSmsCodeFormWithRightCode();
+        assertFalse(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
+                "The 'false' value isn't set in the plainUsers table after registration a user with unmarked marketing checkbox!");
+    }
+
+    @Test(priority = 8)
+    public void submittingRegFormWithMarkedConcessionToEmailsCheckbox() {
+        assertTrue(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
+                "The 'true' value isn't set in the plainUsers table after registration a user with marked marketing checkbox!");
+    }
+
+    @Test(priority = 7)
+    public void successfulSmsCodeConfirmation() throws SQLException {
+        aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
+        assertTrue(aboutMePage.breadcrumbs.isDisplayed(),
+                "Page 'About me' isn't displayed after submitting right sms code!");
+        assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
+                "An entry with the phone isn't added to the userCredentials table!");
+        assertEquals(userCredentialsDAO.getUserByEmail(email).size(), 1,
+                "An entry with the email isn't added to the plainUsers table!");
+    }
+
+    @Test(priority = 6)
+    public void refreshingSmsCode() {
+        String initialCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
+        smsVerificationPage.refreshSmsCode()
+                .waitForPerformingJS();
+        String newCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
+        assertNotEquals(initialCode, newCode, "Sms confirmation code isn't refreshed!");
+    }
+
+    @Test(priority = 6)
     public void enteringWrongSmsCode() {
         int code = 1000;
         if (String.valueOf(code).equals(sentSmsDAO.getSmsCodeByPhone(regPhone))) {
@@ -101,7 +140,7 @@ public class Registration {
                 1, "Error message isn't displayed!");
     }
 
-    @Test(priority = 5, dataProvider = "invalidSmsCodes", dataProviderClass = DataProviders.class)
+    @Test(priority = 6, dataProvider = "invalidSmsCodes", dataProviderClass = DataProviders.class)
     public void enteringInvalidSmsCode(String code) {
         smsVerificationPage.inputToCodeField(code)
                 .submitInvalSmsCodeForm()
@@ -116,9 +155,10 @@ public class Registration {
                 1, "Error message isn't displayed!");
     }
 
-    @Test(dependsOnMethods = "visibilityOfSmsCodeField")
-    public void sendingSmsCode() {
-        assertEquals(sentSmsDAO.getSmsCodeEntryByPhone(regPhone).size(), 1, "Sms code for confirmation was not sent!");
+    @Test(priority = 5)
+    public void creationSmsCodeInDB() throws InterruptedException {
+        assertEquals(sentSmsDAO.getSmsCodeEntryByPhone(regPhone).size(), 1,
+                "Sms code for confirmation was not sent!");
     }
 
     @Test(priority = 4)
@@ -141,8 +181,7 @@ public class Registration {
                 assertTrue(el.isDisplayed());
             }
         } catch (NoSuchElementException e) {
-            mainPage = new MainPage(driver);
-            regPage = mainPage.submitAnUnregNumber();
+            regPage = regPage.goToNewRegPage();
             throw new AssertionError("Registration form with already registered email was submitted");
         }
         assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Użytkownik z tym e-mail jest już zarejestrowany')]").size(),
@@ -160,8 +199,7 @@ public class Registration {
             for (WebElement el : regInputs)
                 assertTrue(regPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " doesn't have red color!");
         } catch (NoSuchElementException e) {
-            mainPage = new MainPage(driver);
-            regPage = mainPage.submitAnUnregNumber();
+            regPage = regPage.goToNewRegPage();
             throw new AssertionError("Blank registration form was submitted");
         }
     }
@@ -190,8 +228,10 @@ public class Registration {
     @Test(priority = 3)
     public void accessibilityOfARegTermsText() {
         regPage.clickRegTerms();
-        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(), 1, "Terms aren't opened!");
-        assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(), "Terms aren't displayed!");
+        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(),
+                1, "Terms aren't opened!");
+        assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(),
+                "Terms aren't displayed!");
         regPage.closeDialogWindow();
         regPage.waitForClosingTerms();
     }
@@ -310,23 +350,20 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
+    @Test(priority = 3)
+    public void concessionToEmailsCheckboxIsMarkedByDefault() {
+        assertTrue(regPage.checkboxIsMarked(regPage.marketingCheckbox),
+                "Marketing checkbox isn't marked by default!");
+    }
+
     @Test(priority = 2)
     public void successfulSubmittingPdlForm() throws SQLException {
-        List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
-        if (requestedUserCredentials.size()==1) {
-            userCredentialsDAO.deleteUserByPhone(regPhone);
-        }
-        else if (requestedUserCredentials.size() > 1) {
-            throw new AssertionError("There are more than 1 unique phone number located in the Usercredentials table!");
-        }
-
         regPage = mainPage.submitAnUnregNumber();
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
         }
         assertEquals(countVisElems, 5, "Not each input element is displayed!");
-        assertTrue(regPage.CheckboxIsMarked(regPage.marketingCheckbox));
     }
 
     @Test(priority = 1)

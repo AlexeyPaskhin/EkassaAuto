@@ -1,3 +1,5 @@
+package com.ekassaauto;
+
 import org.openqa.selenium.WebDriver;
 
 /**

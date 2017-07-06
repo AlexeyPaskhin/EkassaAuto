@@ -1,3 +1,5 @@
+package com.ekassaauto;
+
 import org.testng.annotations.DataProvider;
 
 /**

@@ -1,4 +1,4 @@
-package database.entities;
+package com.ekassaauto.database.entities;
 
 import javax.persistence.*;
 

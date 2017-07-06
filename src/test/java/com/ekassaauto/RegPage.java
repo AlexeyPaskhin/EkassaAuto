@@ -1,7 +1,11 @@
+package com.ekassaauto;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+
+import static com.ekassaauto.Registration.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 
@@ -60,13 +64,13 @@ public class RegPage extends AbstractPage {
     }
 
     RegPage fillRegFormWithValidData() {
-        inputToName(Registration.name)
-                .inputToLastName(Registration.surname)
-                .inputToEmailField(Registration.email)
-                .inputToPasswordField(Registration.password)
-                .inputToPassConfirmField(Registration.password);
-        if(Registration.userCredentialsDAO.getUserByEmail(Registration.email).size()>0) {
-            Registration.userCredentialsDAO.deleteUserByEmail(Registration.email);
+        inputToName(name)
+                .inputToLastName(surname)
+                .inputToEmailField(email)
+                .inputToPasswordField(password)
+                .inputToPassConfirmField(password);
+        if(userCredentialsDAO.getUserByEmail(email).size()>0) {
+            userCredentialsDAO.deleteUserByEmail(email);
         }
         return this;
     }
@@ -87,6 +91,11 @@ public class RegPage extends AbstractPage {
 
     RegPage unmarkRegCheckbox() {
         regForm.uncheck(termsCheckBox);
+        return this;
+    }
+
+    RegPage unmarkMarketingCheckbox() {
+        regForm.uncheck(marketingCheckbox);
         return this;
     }
 
@@ -129,5 +138,9 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-
+    public RegPage goToNewRegPage() {
+        mainPage = new MainPage(driver);
+        regPage = mainPage.submitAnUnregNumber();
+        return this;
+    }
 }

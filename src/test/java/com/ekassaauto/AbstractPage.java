@@ -1,3 +1,5 @@
+package com.ekassaauto;
+
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -13,12 +15,19 @@ public abstract class AbstractPage {
     protected WebDriver driver;
     WebDriverWait explWait;
     JavascriptExecutor jse;
+
+    @FindBy(xpath = "//a[contains(text(), 'MOJE PROFIL')]") WebElement myProfileLink;
 //    @FindBy(xpath = "//div[@class='preloader ng-scope']") WebElement loader;
     public AbstractPage (WebDriver driver) {
         this.driver = driver;
         explWait = new WebDriverWait(driver, 10);
         this.jse = (JavascriptExecutor) driver;
         PageFactory.initElements(driver, this);
+    }
+
+    MyProfilePage goToMyProfile() {
+        myProfileLink.click();
+        return new MyProfilePage(driver);
     }
 
     WebElement findWithXPath(String text) {
@@ -67,7 +76,7 @@ public abstract class AbstractPage {
         return element.getCssValue("color").equals("rgba(67, 160, 71, 1)");
     }
 
-    public boolean CheckboxIsMarked(WebElement checkbox) {
+    public boolean checkboxIsMarked(WebElement checkbox) {
         return checkbox.getAttribute("aria-checked").equals("true");
     }
 

@@ -1,9 +1,8 @@
-package database.dao;
+package com.ekassaauto.database.dao;
 
-import database.entities.PlainUserEntity;
+import com.ekassaauto.database.entities.PlainUserEntity;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**

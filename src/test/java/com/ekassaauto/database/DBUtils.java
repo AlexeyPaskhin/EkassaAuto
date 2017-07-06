@@ -1,4 +1,4 @@
-package database;
+package com.ekassaauto.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

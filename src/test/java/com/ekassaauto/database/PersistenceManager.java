@@ -1,4 +1,4 @@
-package database;
+package com.ekassaauto.database;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

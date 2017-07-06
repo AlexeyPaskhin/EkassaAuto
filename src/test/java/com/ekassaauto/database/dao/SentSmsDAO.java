@@ -1,6 +1,6 @@
-package database.dao;
+package com.ekassaauto.database.dao;
 
-import database.entities.SentSmsEntity;
+import com.ekassaauto.database.entities.SentSmsEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;

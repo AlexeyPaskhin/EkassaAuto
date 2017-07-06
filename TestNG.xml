@@ -5,7 +5,7 @@
     <test name="test1">
         <!--<parameter name="minNumberOfImages" value="6" />-->
         <classes>
-            <class name="Registration" />
+            <class name="com.ekassaauto.Registration" />
         </classes>
 
 

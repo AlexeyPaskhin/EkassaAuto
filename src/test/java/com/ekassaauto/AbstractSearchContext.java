@@ -1,3 +1,5 @@
+package com.ekassaauto;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;

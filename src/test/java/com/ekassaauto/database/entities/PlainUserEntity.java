@@ -1,4 +1,4 @@
-package database.entities;
+package com.ekassaauto.database.entities;
 
 import javax.persistence.*;
 
@@ -15,6 +15,8 @@ public class PlainUserEntity {
     @Column(name = "firstname")
     private String firstName;
     private String lastName;
+    @Column(name = "ismarketingdistribution")
+    private Boolean isMarketingDistribution;
 
     public Long getId() {
         return id;
@@ -46,6 +48,14 @@ public class PlainUserEntity {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public Boolean getMarketingDistribution() {
+        return isMarketingDistribution;
+    }
+
+    public void setMarketingDistribution(Boolean marketingDistribution) {
+        isMarketingDistribution = marketingDistribution;
     }
 
     @Override

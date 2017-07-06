@@ -43,4 +43,13 @@ public class DataProviders {
                 {" 123456q "}
         };
     }
+
+    @DataProvider
+    public static Object[][] invalidSmsCodes() {
+        return new Object[][] {
+                {""},
+                {"abc1"},
+                {"123"}
+        };
+    }
 }

@@ -1,4 +1,5 @@
 import database.PersistenceManager;
+import database.dao.SentSmsDAO;
 import database.dao.UserCredentialsDAO;
 import database.dao.PlainUsersDAO;
 import database.entities.UserCredential;
@@ -6,9 +7,7 @@ import io.github.bonigarcia.wdm.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
 import java.sql.SQLException;
@@ -25,17 +24,24 @@ public class Registration {
     static String regPhone = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin@gmail.com", password = "111111a";
     WebDriver.Options options;
     private WebDriver driver;
-    private MainPage mainPage;
-    private RegPage regPage;
-    private SmsVerificationPage smsVerificationPage;
+    static MainPage mainPage;
+    static RegPage regPage;
+    static SmsVerificationPage smsVerificationPage;
     static UserCredentialsDAO userCredentialsDAO;
     private PlainUsersDAO plainUsersDAO;
+    static SentSmsDAO sentSmsDAO;
 
-    @BeforeClass
-    public void preparation() {
+
+    @BeforeSuite
+    public void createDBConnection() {
         EntityManager entityManager = (new PersistenceManager()).getEntityManager();
         userCredentialsDAO = new UserCredentialsDAO(entityManager);
         plainUsersDAO = new PlainUsersDAO(entityManager);
+        sentSmsDAO = new SentSmsDAO(entityManager);
+    }
+
+    @BeforeClass
+    public void preparation() {
 //        String property = System.getProperty("user.dir") + "/drivers/chromedriver.exe";
 //        System.setProperty("webdriver.chrome.driver", property);
 //        InternetExplorerDriverManager.getInstance().setup();
@@ -58,7 +64,8 @@ public class Registration {
         options.window().maximize();
         mainPage = new MainPage(driver);
 
-//        regPage = mainPage.submitAnUnregNumber();
+        regPage = mainPage.submitAnUnregNumber();
+        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
     }
 
 //    @Test
@@ -75,11 +82,48 @@ public class Registration {
 //        }
 //    }
 
+    @Test(priority = 5)
+    public void enteringWrongSmsCode() {
+        int code = 1000;
+        if (String.valueOf(code).equals(sentSmsDAO.getSmsCodeByPhone(regPhone))) {
+            code++;
+        }
+        smsVerificationPage.inputToCodeField("" + code)
+                .submitInvalSmsCodeForm()
+                .waitForPerformingJS();
+        try {
+            assertTrue(smsVerificationPage.smsCodeInput.isDisplayed());
+        } catch (NoSuchElementException e) {
+            smsVerificationPage.goToNewSmsCodePage();
+            throw new AssertionError("Invalid sms confirmation form was submitted");
+        }
+        assertEquals(smsVerificationPage.findElementsByXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").size(),
+                1, "Error message isn't displayed!");
+    }
+
+    @Test(priority = 5, dataProvider = "invalidSmsCodes", dataProviderClass = DataProviders.class)
+    public void enteringInvalidSmsCode(String code) {
+        smsVerificationPage.inputToCodeField(code)
+                .submitInvalSmsCodeForm()
+                .waitForPerformingJS();
+        try {
+            assertTrue(smsVerificationPage.fieldBorderIsRed(smsVerificationPage.smsCodeInput), "Invalid sms code input field doesn't have red color!");
+        } catch (NoSuchElementException e) {
+            smsVerificationPage.goToNewSmsCodePage();
+            throw new AssertionError("Invalid sms confirmation form was submitted");
+        }
+        assertEquals(smsVerificationPage.findElementsByXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").size(),
+                1, "Error message isn't displayed!");
+    }
+
+    @Test(dependsOnMethods = "visibilityOfSmsCodeField")
+    public void sendingSmsCode() {
+        assertEquals(sentSmsDAO.getSmsCodeEntryByPhone(regPhone).size(), 1, "Sms code for confirmation was not sent!");
+    }
+
     @Test(priority = 4)
     public void visibilityOfSmsCodeField() {
-        regPage.fillRegFormWithValidData()
-                .markRegCheckbox();
-        smsVerificationPage = regPage.submitValidRegForm();
+        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
         assertTrue(smsVerificationPage.smsCodeSubmitButton.isDisplayed(), "The block for sms code isn't displayed!");
     }
 
@@ -90,7 +134,8 @@ public class Registration {
                 .inputToEmailField(plainUsersDAO.getRegisteredEmail())
                 .submitInvalRegForm()
                 .waitForPerformingJS();
-        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField, regPage.passwordField, regPage.passConfirmField};
+        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
+                regPage.passwordField, regPage.passConfirmField};
         try {
             for (WebElement el : regInputs) {
                 assertTrue(el.isDisplayed());
@@ -105,14 +150,15 @@ public class Registration {
     }
 
     @Test(priority = 3)
-    public void submittingBlankRegForm() throws InterruptedException {
+    public void submittingBlankRegForm() {
         regPage.setBlankValuesToRegForm()
                 .submitInvalRegForm()
                 .waitForPerformingJS();
-        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField, regPage.passwordField, regPage.passConfirmField};
+        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
+                regPage.passwordField, regPage.passConfirmField};
         try {
             for (WebElement el : regInputs)
-                assertTrue(regPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " don't have red color!");
+                assertTrue(regPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " doesn't have red color!");
         } catch (NoSuchElementException e) {
             mainPage = new MainPage(driver);
             regPage = mainPage.submitAnUnregNumber();
@@ -128,7 +174,8 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.passConfirmField));
         regPage.submitInvalRegForm()
                 .waitForReaction();
-        assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(), 1, "Error message isn't displayed!");
+        assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(),
+                1, "Error message isn't displayed!");
     }
 
     @Test(priority = 3)
@@ -332,14 +379,14 @@ public class Registration {
     }
 
     @Test(priority = 1)
-    public void enteringLettersAndSymbolsToPhone() throws InterruptedException {
+    public void enteringLettersAndSymbolsToPhone() {
         String def = mainPage.waitPhonePdlInputIsAccessible()
                 .getValueFromPhoneInput();
         mainPage.inputToPhone("qwe ы!@-");
         assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
         mainPage.markPDLCheckbox()
                 .submitInvalPDLForm()
-                .waitForReaction();
+                .waitForPerformingJS();
         try {
             assertTrue(mainPage.inputIsInvalid());
         } catch (NoSuchElementException ex) {

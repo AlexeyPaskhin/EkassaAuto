@@ -1,4 +1,3 @@
-import database.dao.UserCredentialsDAO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -96,8 +95,16 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-    public SmsVerificationPage submitValidRegForm() {
+    public RegPage submitValidRegForm() {
         regForm.submit(regButton);
+        return this;
+    }
+
+    public SmsVerificationPage submitRegFormWithVerifiedData() {
+        fillRegFormWithValidData()
+                .markRegCheckbox()
+                .submitValidRegForm()
+                .waitForPerformingJS();
         return new SmsVerificationPage(driver);
     }
 

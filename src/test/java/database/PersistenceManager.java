@@ -20,7 +20,7 @@ public class PersistenceManager {
         return emFactory.createEntityManager();
     }
 
-    public void close() {
+    public void closeEntityManager() {
         emFactory.close();
     }
 }

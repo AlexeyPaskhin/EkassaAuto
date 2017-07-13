@@ -3,6 +3,7 @@ package com.ekassaauto;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import static com.ekassaauto.Registration.*;
 
@@ -52,5 +53,15 @@ public class SmsVerificationPage extends AbstractPage {
         smsVerificationPage = regPage.submitRegFormWithVerifiedData();
         return this;
     }
+
+//    void waitForSendingSmsCode(String initCode, String newCode) {
+//        explWait.until(new ExpectedCondition<Boolean>() {
+//            @Override
+//            public Boolean apply(WebDriver driver){
+//
+//                return true;    чисто шаблон себе пока сохранил
+//            }
+//        });
+//    }
 
 }

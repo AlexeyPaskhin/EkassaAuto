@@ -58,7 +58,7 @@ public class Registration {
 //        DesiredCapabilities capabilities = new DesiredCapabilities();
 //        capabilities.setCapability(CapabilityType.PROXY, proxy);
 //        driver = new ChromeDriver(capabilities);
-//        driver = new FirefoxDriver();
+//        driver = new OperaDriver();
         ChromeDriverManager.getInstance().setup();
         driver = new ChromeDriver();
         options = driver.manage();
@@ -66,6 +66,7 @@ public class Registration {
         options.window().maximize();
         mainPage = new MainPage(driver);
 
+//        mainPage.switchToConsolidationForm();
 //        regPage = mainPage.submitAnUnregNumber();
 //        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
     }
@@ -84,24 +85,89 @@ public class Registration {
 //        }
 //    }
 
-    @Test(priority = 9)
-    public void submittingRegFormWithUnmarkedConcessionToEmailsCheckbox() {
+    @Test(priority = 12)
+    public void submittingConsolidationMainFormWhenPhoneIsBlank() {
+        mainPage.markConsolidationCheckbox()
+                .inputToConsolidationPhone("")
+                .submitInvalidConsolidationForm()
+                .waitForPerformingJS();
+        try {
+            assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
+            mainPage.submitInvalidConsolidationForm()
+                    .waitForPerformingJS();
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput),
+                    "Border of invalid consolidation field isn't highlighted with red color!");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid consolidation form is submitted", ex);
+        }
+    }
 
-        aboutMePage = regPage.goToNewRegPage()
+    @Test(priority = 12)
+    public void uncheckedConsolidationCheckbox() {
+        mainPage.inputToConsolidationPhone(regPhone)
+                .uncheckConsolidationCheckbox()
+                .submitInvalidConsolidationForm()
+                .waitForPerformingJS();
+        try {
+            assertTrue(mainPage.fieldWithConsolidationCheckboxIsInvalid(),
+                    "Unmarked checkbox has valid state after submitting!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid consolidation form is submitted", ex);
+        }
+    }
+
+    //здесь когда поле ввода приобретает зеленый цвет - оно становится в фокусе
+    //тест должен выполнятся с нетронутым инпутом телефона, поэтому все тесты со взаимодествием с инпутом имеют приоритет выше
+    @Test(priority = 11)
+    public void submittingEmptyConsolidationForm() {
+        aboutMePage.goToMyProfile()
+                .logOut();
+        mainPage.switchToConsolidationForm()
+                .uncheckConsolidationCheckbox()
+//                .inputToConsolidationPhone("")
+                .submitInvalidConsolidationForm()
+                .waitForPerformingJS();
+        try {
+            assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
+            assertTrue(mainPage.elementIsGreen(mainPage.consolidationPhoneInput),
+                    "Consolidation input isn't focused after first submitting blank consolidation form!");
+            mainPage.submitInvalidConsolidationForm()
+                    .waitForPerformingJS();
+
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput),
+                    "Border of invalid field isn't highlighted with red color!");
+            assertTrue(mainPage.fieldWithConsolidationCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid consolidation form is submitted", ex);
+        }
+    }
+
+    @Test(priority = 10)
+    public void submittingRegFormWithUnmarkedConcessionToEmailsCheckbox() {
+        aboutMePage = aboutMePage.goToMyProfile()
+                .logOut()
+                .submitAnUnregNumber()
                 .unmarkMarketingCheckbox()
                 .submitRegFormWithVerifiedData()
                 .submitSmsCodeFormWithRightCode();
         assertFalse(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
-                "The 'false' value isn't set in the plainUsers table after registration a user with unmarked marketing checkbox!");
+                "The 'false' value isn't set to relevant field in the plainUsers table after registration a user with unmarked marketing checkbox!");
     }
 
-    @Test(priority = 8)
+    @Test(priority = 9)
     public void submittingRegFormWithMarkedConcessionToEmailsCheckbox() {
         assertTrue(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
                 "The 'true' value isn't set in the plainUsers table after registration a user with marked marketing checkbox!");
     }
 
-    @Test(priority = 7)
+    @Test(priority = 8)
     public void successfulSmsCodeConfirmation() throws SQLException {
         aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
         assertTrue(aboutMePage.breadcrumbs.isDisplayed(),
@@ -112,16 +178,23 @@ public class Registration {
                 "An entry with the email isn't added to the plainUsers table!");
     }
 
-    @Test(priority = 6)
-    public void refreshingSmsCode() {
+    @Test(priority = 7)
+    public void refreshingSmsCode() throws InterruptedException {
         String initialCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
         smsVerificationPage.refreshSmsCode()
                 .waitForPerformingJS();
         String newCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
+
+        for (int i =0; i<10; i++) {
+            if (newCode.equals(initialCode)) {
+                Thread.sleep(500);
+                newCode = sentSmsDAO.getSmsCodeByPhone(regPhone); //ждем на всякий случай, чтоб обновился код в базе
+            } else break;
+        }
         assertNotEquals(initialCode, newCode, "Sms confirmation code isn't refreshed!");
     }
 
-    @Test(priority = 6)
+    @Test(priority = 7)
     public void enteringWrongSmsCode() {
         int code = 1000;
         if (String.valueOf(code).equals(sentSmsDAO.getSmsCodeByPhone(regPhone))) {
@@ -138,36 +211,41 @@ public class Registration {
         }
         assertEquals(smsVerificationPage.findElementsByXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").size(),
                 1, "Error message isn't displayed!");
+        assertFalse(smsVerificationPage.findWithXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").getText().contains("wysłane nowe"),
+                "Excess message about sending new code is displayed - actually new code isn't sent!");
     }
 
-    @Test(priority = 6, dataProvider = "invalidSmsCodes", dataProviderClass = DataProviders.class)
+    @Test(priority = 7, dataProvider = "invalidSmsCodes", dataProviderClass = DataProviders.class)
     public void enteringInvalidSmsCode(String code) {
         smsVerificationPage.inputToCodeField(code)
                 .submitInvalSmsCodeForm()
                 .waitForPerformingJS();
         try {
-            assertTrue(smsVerificationPage.fieldBorderIsRed(smsVerificationPage.smsCodeInput), "Invalid sms code input field doesn't have red color!");
+            assertTrue(smsVerificationPage.fieldBorderIsRed(smsVerificationPage.smsCodeInput),
+                    "Invalid sms code input field doesn't have red color!");
         } catch (NoSuchElementException e) {
             smsVerificationPage.goToNewSmsCodePage();
             throw new AssertionError("Invalid sms confirmation form was submitted");
         }
         assertEquals(smsVerificationPage.findElementsByXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").size(),
                 1, "Error message isn't displayed!");
+        assertFalse(smsVerificationPage.findWithXPath("//*[contains(text(), 'Hasło zostało wprowadzone niepoprawnie')]").getText().contains("wysłane nowe"),
+                "Excess message about sending new code is displayed - actually new code isn't sent!");
     }
 
-    @Test(priority = 5)
-    public void creationSmsCodeInDB() throws InterruptedException {
+    @Test(priority = 6)
+    public void creationSmsCodeInDB() {
         assertEquals(sentSmsDAO.getSmsCodeEntryByPhone(regPhone).size(), 1,
                 "Sms code for confirmation was not sent!");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 5)
     public void visibilityOfSmsCodeField() {
         smsVerificationPage = regPage.submitRegFormWithVerifiedData();
         assertTrue(smsVerificationPage.smsCodeSubmitButton.isDisplayed(), "The block for sms code isn't displayed!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void registrationWithEarlierUsedEmail() {
         regPage.fillRegFormWithValidData()
                 .markRegCheckbox()
@@ -188,7 +266,7 @@ public class Registration {
                 1, "Error message isn't displayed!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void submittingBlankRegForm() {
         regPage.setBlankValuesToRegForm()
                 .submitInvalRegForm()
@@ -204,7 +282,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void equalityValidationOfPasswordsWhileEditingMainPassField() throws InterruptedException {
         regPage.fillRegFormWithValidData()
                 .inputToPasswordField(password + "a")
@@ -216,7 +294,7 @@ public class Registration {
                 1, "Error message isn't displayed!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void accessibilityOfConcessionToEmailsText() {
         regPage.clickMarketingTerms();
         assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").size(), 1, "Terms aren't opened!");
@@ -225,7 +303,7 @@ public class Registration {
         regPage.waitForClosingTerms();
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void accessibilityOfARegTermsText() {
         regPage.clickRegTerms();
         assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(),
@@ -236,7 +314,7 @@ public class Registration {
         regPage.waitForClosingTerms();
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void submittingRegFormWithUnmarkedTermsCheckbox() throws InterruptedException {
         regPage.fillRegFormWithValidData()
                 .unmarkRegCheckbox()
@@ -244,14 +322,15 @@ public class Registration {
                 .waitForReaction();
         try {
             assertTrue(regPage.fieldIsInvalid(regPage.termsCheckBox), "Unmarked checkbox has valid state!");
-            assertTrue(regPage.elementIsRed(regPage.linkRegTerms), "linkRegTerms near to invalid checkbox isn't highlighted with red color!");
+            assertTrue(regPage.elementIsRed(regPage.linkRegTerms),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             regPage.goBack();
             throw new AssertionError("Unfilled registration form is submitted", ex);
         }
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void validationOfPasswordConfirmationField() {
         regPage.inputToPasswordField(password)
                 .inputToPassConfirmField(password + "a")
@@ -264,7 +343,7 @@ public class Registration {
         assertFalse(regPage.fieldBorderIsRed(regPage.passConfirmField), "Border of valid field is highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void positiveValidationOfPasswordField() {
         regPage.inputToPasswordField("1q\\%[`")
                 .moveFromAField(regPage.passwordField);
@@ -273,7 +352,7 @@ public class Registration {
         assertFalse(regPage.fieldBorderIsRed(regPage.passwordField), "Border of valid field is highlighted with red color!");
     }
 
-    @Test(priority = 3, dataProvider = "passwordValidation", dataProviderClass = DataProviders.class)
+    @Test(priority = 4, dataProvider = "passwordValidation", dataProviderClass = DataProviders.class)
     public void negativeValidationOfPasswordField(String password) {
         regPage.inputToPasswordField(password)
                 .moveFromAField(regPage.passwordField);
@@ -282,7 +361,7 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.passwordField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     //видимо селениум видоизменяет кириллицу после "@" в малопонятные символы, поэтому будем считать, что ожидаем вводимую букву увидеть такой, как написано в "expected"
     public void positiveValidationOfEmailField() {
         regPage.inputToEmailField("a.paskhin-@gmail-ы.coms")
@@ -292,7 +371,7 @@ public class Registration {
         assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
-    @Test(priority = 3, dataProvider = "emailValidation", dataProviderClass = DataProviders.class)
+    @Test(priority = 4, dataProvider = "emailValidation", dataProviderClass = DataProviders.class)
     public void negativeValidationOfEmailField(String text) {
         regPage.inputToEmailField(text)
                 .moveFromAField(regPage.emailField);
@@ -300,7 +379,7 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.emailField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void positiveValidationWhileUsingHyphenInLastNameField() {
         regPage.inputToLastName("a-a")
                 .moveFromAField(regPage.lastNameField);
@@ -308,7 +387,7 @@ public class Registration {
         assertFalse(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of valid field is highlighted with red color!");
     }
 
-    @Test(priority = 3, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
+    @Test(priority = 4, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
     public void negativeValidationWhileUsingHyphenInLastNameField(String text) {
         regPage.inputToLastName(text)
                 .moveFromAField(regPage.lastNameField);
@@ -316,7 +395,7 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void enteringNonLatinAndSpecCharsToLastNameField() {
         regPage.inputToLastName("іыцжч!@.\"є'=+&")
                 .moveFromAField(regPage.lastNameField);
@@ -325,7 +404,7 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void positiveValidationWhileUsingHyphenInNameField() {
         regPage.inputToName("An-Mar")
                 .moveFromAField(regPage.nameField);
@@ -333,7 +412,7 @@ public class Registration {
         assertFalse(regPage.fieldBorderIsRed(regPage.nameField), "Border of valid field is highlighted with red color!");
     }
 
-    @Test(priority = 3, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
+    @Test(priority = 4, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
     public void negativeValidationWhileUsingHyphenInNameField(String text) {
         regPage.inputToName(text)
                 .moveFromAField(regPage.nameField);
@@ -341,7 +420,7 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void enteringNonLatinAndSpecCharsToNameField() {
         regPage.inputToName("іыцжч!@.\"є'=+&")
                 .moveFromAField(regPage.nameField);
@@ -350,13 +429,13 @@ public class Registration {
         assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     public void concessionToEmailsCheckboxIsMarkedByDefault() {
         assertTrue(regPage.checkboxIsMarked(regPage.marketingCheckbox),
                 "Marketing checkbox isn't marked by default!");
     }
 
-    @Test(priority = 2)
+    @Test(priority = 3)
     public void successfulSubmittingPdlForm() throws SQLException {
         regPage = mainPage.submitAnUnregNumber();
         int countVisElems = 0;
@@ -366,48 +445,49 @@ public class Registration {
         assertEquals(countVisElems, 5, "Not each input element is displayed!");
     }
 
-    @Test(priority = 1)
+    @Test(priority = 2)
     public void uncheckedCheckbox() throws InterruptedException {
-        mainPage.inputToPhone(regPhone)
-                .uncheckPDLChBox()
-                .submitInvalPDLForm()
+        mainPage.inputToPDLPhone(regPhone)
+                .uncheckPDLCheckbox()
+                .submitInvalidPDLForm()
                 .waitForReaction();
         try {
-            assertTrue(mainPage.fieldWithCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
-            assertTrue(mainPage.elementIsRed(mainPage.linkTerms), "linkRegTerms near to invalid checkbox isn't highlighted with red color!");
-        } catch (NoSuchElementException ex) {
-            mainPage = new MainPage(driver);
-            throw new AssertionError("PDL form is submitted", ex);
-        }
-    }
-
-    @Test(priority = 1)
-    public void submittingWhenPhoneIsBlank() throws InterruptedException {
-        mainPage.markPDLCheckbox()
-                .inputToPhone("")
-                .submitInvalPDLForm()
-                .waitForReaction();
-        try {
-            assertTrue(mainPage.inputIsInvalid());
-            mainPage.submitInvalPDLForm()
-                    .waitForReaction();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.input), "Border of invalid field isn't highlighted with red color!");
+            assertTrue(mainPage.fieldWithPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInPDL),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid PDL form is submitted", ex);
         }
     }
 
-    @Test(priority = 1)
-    //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
-    public void incompletePhoneNumber() throws InterruptedException {
-        mainPage.inputToPhone("22222222");
-        String def = mainPage.getValueFromPhoneInput();
+    @Test(priority = 2)
+    public void submittingWhenPhoneIsBlank() throws InterruptedException {
         mainPage.markPDLCheckbox()
-                .submitInvalPDLForm()
+                .inputToPDLPhone("")
+                .submitInvalidPDLForm()
                 .waitForReaction();
         try {
-            assertTrue(mainPage.inputIsInvalid());
+            assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
+            mainPage.submitInvalidPDLForm()
+                    .waitForReaction();
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput), "Border of invalid field isn't highlighted with red color!");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid PDL form is submitted", ex);
+        }
+    }
+
+    @Test(priority = 2)
+    //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
+    public void incompletePhoneNumber() throws InterruptedException {
+        mainPage.inputToPDLPhone("22222222");
+        String def = mainPage.getValueFromPhoneInput();
+        mainPage.markPDLCheckbox()
+                .submitInvalidPDLForm()
+                .waitForReaction();
+        try {
+            assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
             assertEquals(mainPage.getValueFromPhoneInput(), def, "Digits are deleted from input");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
@@ -415,17 +495,17 @@ public class Registration {
         }
     }
 
-    @Test(priority = 1)
+    @Test(priority = 2)
     public void enteringLettersAndSymbolsToPhone() {
         String def = mainPage.waitPhonePdlInputIsAccessible()
                 .getValueFromPhoneInput();
-        mainPage.inputToPhone("qwe ы!@-");
+        mainPage.inputToPDLPhone("qwe ы!@-");
         assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
         mainPage.markPDLCheckbox()
-                .submitInvalPDLForm()
+                .submitInvalidPDLForm()
                 .waitForPerformingJS();
         try {
-            assertTrue(mainPage.inputIsInvalid());
+            assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid PDL form is submitted", ex);
@@ -433,20 +513,23 @@ public class Registration {
     }
 
     //здесь когда поле ввода приобретает зеленый цвет - оно становится в фокусе
+    //тест должен выполнятся с нетронутым инпутом телефона, поэтому все тесты со взаимодествием с инпутом имеют приоритет выше
     @Test(priority = 1)
     public void submittingEmptyPdlForm() throws InterruptedException {
-        mainPage.uncheckPDLChBox()
-                .inputToPhone("")
-                .submitInvalPDLForm()
+        mainPage.uncheckPDLCheckbox()
+//                .inputToPDLPhone("")
+                .submitInvalidPDLForm()
                 .waitForReaction();
         try {
-            assertTrue(mainPage.inputIsInvalid());
-            assertTrue(mainPage.elementIsGreen(mainPage.input), "Input isn't focused!");
-            mainPage.submitInvalPDLForm()
+            assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
+            assertTrue(mainPage.elementIsGreen(mainPage.pdlPhoneInput),
+                    "PDL input isn't focused after first submitting blank PDL form!");
+            mainPage.submitInvalidPDLForm()
                     .waitForReaction();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.input), "Border of invalid field isn't highlighted with red color!");
-            assertTrue(mainPage.fieldWithCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
-            assertTrue(mainPage.elementIsRed(mainPage.linkTerms), "linkRegTerms near to invalid checkbox isn't highlighted with red color!");
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput), "Border of invalid field isn't highlighted with red color!");
+            assertTrue(mainPage.fieldWithPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInPDL),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid PDL form is submitted", ex);

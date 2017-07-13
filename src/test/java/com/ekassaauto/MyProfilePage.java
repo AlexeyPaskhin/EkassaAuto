@@ -3,7 +3,9 @@ package com.ekassaauto;
 import com.ekassaauto.Form;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.*;
+
+import static com.ekassaauto.Registration.*;
 
 /**
  * Created by user on 14.03.2017.
@@ -24,6 +26,7 @@ public class MyProfilePage extends AbstractPage {
 
     MainPage logOut() {
         logOutButton.click();
-        return new MainPage(driver);
+        mainPage.waitForOpennessOfPDLCalc();
+        return mainPage;
     }
 }

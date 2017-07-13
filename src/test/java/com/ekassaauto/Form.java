@@ -1,5 +1,6 @@
 package com.ekassaauto;
 
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 /**
@@ -13,6 +14,13 @@ public class Form extends AbstractElement {
     public Form set(String xplocator, String value) {
         findWithXPath(xplocator).clear();
         findWithXPath(xplocator).sendKeys(value);
+        return this;
+    }
+
+    public Form setToFieldWithOverlay(WebElement field, String value) {
+        field.clear();
+        field.sendKeys(Keys.RETURN);  //обычный клик из за оверлея над пдл и консолид. формами забагован в хроме, это аналогичная ф-ция через клавиатуру
+        field.sendKeys(value);
         return this;
     }
 

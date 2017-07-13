@@ -138,9 +138,5 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-    public RegPage goToNewRegPage() {
-        mainPage = new MainPage(driver);
-        regPage = mainPage.submitAnUnregNumber();
-        return this;
-    }
+
 }

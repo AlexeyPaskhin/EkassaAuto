@@ -4,6 +4,9 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import static com.ekassaauto.Registration.mainPage;
+import static com.ekassaauto.Registration.regPage;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import java.util.List;
@@ -28,6 +31,12 @@ public abstract class AbstractPage {
     MyProfilePage goToMyProfile() {
         myProfileLink.click();
         return new MyProfilePage(driver);
+    }
+
+    public RegPage goToNewRegPage() {
+        mainPage = new MainPage(driver);
+        regPage = mainPage.submitAnUnregNumber();
+        return new RegPage(driver);
     }
 
     WebElement findWithXPath(String text) {

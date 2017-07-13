@@ -4,6 +4,7 @@ import com.ekassaauto.database.entities.UserCredential;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -15,31 +16,29 @@ import static com.ekassaauto.Registration.*;
  * Created by user on 10.03.2017.
  */
 public class MainPage extends AbstractPage {
-    private Form mainRegForm;
-    @FindBy(xpath = "//input[@name='phone']")
-    protected WebElement input;
-    @FindBy(xpath = "//*[@type='submit']")
-    WebElement submitPDLButton;
+    private Form pdlRegForm;
+    private Form consolidationRegForm;
+
+    @FindBy(xpath = "//input[@name='phone']") protected WebElement pdlPhoneInput;
+    @FindBy(xpath = "(//input[@name='phone'])[2]") protected WebElement consolidationPhoneInput;
+    @FindBy(xpath = "//*[@type='submit']") WebElement submitPDLButton;
+    @FindBy(xpath = "(//*[@type='submit'])[2]") WebElement submitConsButton;
     @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']")
-    protected WebElement mdDialogOfAccessToPersData;
+    @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
     @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']")
-    protected WebElement mdDialogOfLoanInfo;
-    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']")
-    private WebElement mainRegCheckbox;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
-    protected WebElement linkTerms;
-    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']")
-    private WebElement linkLoanInfo;
-    @FindBy(xpath = "(//*[@type='submit'])[2]")
-    WebElement submitConsButton;
+    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']") protected WebElement mdDialogOfLoanInfo;
+    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlRegCheckbox;
+    @FindBy(xpath = "(//md-checkbox[@ng-model='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") protected WebElement termsLinkInPDL;
+    @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]") protected WebElement termsLinkInConsolidation;
+    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']") private WebElement linkLoanInfo;
+    @FindBy(xpath = "//div[text()='Kredyt konsolidacyjny']") WebElement consolidationOverlay;
 
 
     MainPage(WebDriver driver) {
         super(driver);
         driver.get("http://test.ekassa.com");
-        waitForOpennessOfCalc();
+        waitForOpennessOfPDLCalc();
         if (!"Pożyczki na raty: chwilówki ratalne online - Ekassa".equals(driver.getTitle())) {
             throw new IllegalStateException("This is not the main page");
         }
@@ -47,18 +46,20 @@ public class MainPage extends AbstractPage {
     }
 
     private void initPageElements() {
-        mainRegForm = new Form(findWithXPath("//form"));
+        pdlRegForm = new Form(findWithXPath("//form"));
+        consolidationRegForm = new Form(findWithXPath("(//form)[2]"));
     }
 
-    MainPage submitInvalPDLForm() {
-        mainRegForm.submit();
+    MainPage submitInvalidPDLForm() {
+        pdlRegForm.submit(submitPDLButton);
         return this;
     }
 
-//    RegPage submitNewUserRegForm() {
-////        mainRegForm.submit(submitPDLButton);
-//
-//    }
+    MainPage submitInvalidConsolidationForm() {
+        pdlRegForm.submit(submitConsButton);
+        return this;
+    }
+
 
     RegPage submitAnUnregNumber() {
         try {
@@ -71,52 +72,71 @@ public class MainPage extends AbstractPage {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        mainRegForm.set(input, regPhone)
-                .markCheckBox(mainRegCheckbox)
+        pdlRegForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
+                .markCheckBox(pdlRegCheckbox)
                 .submit(submitPDLButton);
 
         waitForPerformingJS();
 
-////        explWait.until(presenceOfElementLocated(By.xpath("//input[@name='name']")));
-//        explWait.until(elementToBeClickable(By.xpath("//input[@name='name']")));
+////        explWait.until(presenceOfElementLocated(By.xpath("//pdlPhoneInput[@name='name']")));
+//        explWait.until(elementToBeClickable(By.xpath("//pdlPhoneInput[@name='name']")));
         return new RegPage(driver);
     }
 
     PasswordPage submitExistUserRegForm() {
-        mainRegForm.submit(submitPDLButton);
+        pdlRegForm.submit(submitPDLButton);
         return new PasswordPage(driver);
     }
 
     MainPage markPDLCheckbox() {
-        mainRegForm.markCheckBox(mainRegCheckbox);
+        pdlRegForm.markCheckBox(pdlRegCheckbox);
+        return this;
+    }
+    MainPage markConsolidationCheckbox() {
+        consolidationRegForm.markCheckBox(consolidationRegCheckbox);
         return this;
     }
 
-    MainPage uncheckPDLChBox() {
-        mainRegForm.uncheck(mainRegCheckbox);
+    MainPage uncheckPDLCheckbox() {
+        pdlRegForm.uncheck(pdlRegCheckbox);
         return this;
     }
 
-    MainPage inputToPhone(String data) {
-//        input.sendKeys(data);
-        mainRegForm.set(input, data);
+    MainPage uncheckConsolidationCheckbox() {
+        consolidationRegForm.uncheck(consolidationRegCheckbox);
+        return this;
+    }
+
+    MainPage inputToPDLPhone(String data) {
+//        pdlPhoneInput.sendKeys(data);
+        pdlRegForm.setToFieldWithOverlay(pdlPhoneInput, data);
+        return this;
+    }
+
+    MainPage inputToConsolidationPhone(String data) {
+        pdlRegForm.setToFieldWithOverlay(consolidationPhoneInput, data);
         return this;
     }
 
     String getValueFromPhoneInput() {
-        return mainRegForm.getFieldValue(input);
+        return pdlRegForm.getFieldValue(pdlPhoneInput);
     }
 
-    boolean inputIsInvalid() {
-        return mainRegForm.getElementClass(input).contains("invalid");
+    boolean inputIsInvalid(WebElement input) {
+        return input.getAttribute("class").contains("invalid");
     }
 
-    boolean fieldWithCheckboxIsInvalid() {
-        return mainRegForm.getElementClass(linkTerms).contains("error");
+    boolean fieldWithPDLCheckboxIsInvalid() {
+        return pdlRegForm.getElementClass(termsLinkInPDL).contains("error");
+    }
+
+    boolean fieldWithConsolidationCheckboxIsInvalid() {
+        return consolidationRegForm.getElementClass(termsLinkInConsolidation).contains("error");
     }
 
     MainPage clickTheTerms() {
-        linkTerms.click();
+        termsLinkInPDL.sendKeys(Keys.RETURN);     //здесь замена .click -у, потому что клик не работает всегда адекватно
+        //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
@@ -124,6 +144,14 @@ public class MainPage extends AbstractPage {
     MainPage clickLoanInfo() {
         linkLoanInfo.click();
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Chwilówka w ...']")));
+        return this;
+    }
+
+    MainPage switchToConsolidationForm() {
+        if (consolidationOverlay.isDisplayed()){
+            consolidationOverlay.click();
+        }
+        waitForOpennessOfConsolidationCalc();
         return this;
     }
 
@@ -143,13 +171,22 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-    MainPage waitForOpennessOfCalc() {
-        explWait.until(invisibilityOf(findWithXPath("//div[text()='Chwilówki']")));
+    MainPage waitForOpennessOfPDLCalc() {
+//        explWait.until(invisibilityOf((findWithXPath("//*[text()='Chwilówki']"))));
+        explWait.until(elementToBeClickable(termsLinkInPDL));
+        return this;
+    }
+
+    MainPage waitForOpennessOfConsolidationCalc() {
+        explWait.until(invisibilityOf((findWithXPath("//*[text()='Kredyt konsolidacyjny']"))));
+        explWait.until(elementToBeClickable(termsLinkInConsolidation));
         return this;
     }
 
     MainPage waitPhonePdlInputIsAccessible() {
-        explWait.until(elementToBeClickable(input));
+        explWait.until(elementToBeClickable(pdlPhoneInput));
         return this;
     }
+
+
 }

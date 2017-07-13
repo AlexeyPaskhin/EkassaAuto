@@ -85,6 +85,7 @@ public class Registration {
 //        }
 //    }
 
+
     @Test(priority = 12)
     public void submittingConsolidationMainFormWhenPhoneIsBlank() {
         mainPage.markConsolidationCheckbox()

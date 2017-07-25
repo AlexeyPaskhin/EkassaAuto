@@ -3,7 +3,6 @@ package com.ekassaauto;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import static com.ekassaauto.Registration.*;
 
@@ -38,7 +37,7 @@ public class SmsVerificationPage extends AbstractPage {
     AboutMePage submitSmsCodeFormWithRightCode() {
         inputToCodeField(sentSmsDAO.getSmsCodeByPhone(regPhone));
         smsCodeForm.submit(smsCodeSubmitButton);
-        waitForPerformingJS();
+        customWaitForPerformingJS();
         return new AboutMePage(driver);
     }
 
@@ -49,7 +48,7 @@ public class SmsVerificationPage extends AbstractPage {
     
     SmsVerificationPage goToNewSmsCodePage() {
         mainPage = new MainPage(driver);
-        regPage = mainPage.submitAnUnregNumber();
+        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
         smsVerificationPage = regPage.submitRegFormWithVerifiedData();
         return this;
     }

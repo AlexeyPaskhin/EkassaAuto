@@ -39,6 +39,10 @@ public class Form extends AbstractElement {
         field.click();
         return field.getAttribute("value");
     }
+    public String getValueFromFieldAtFormWIthOverlay(WebElement field) {
+        field.sendKeys(Keys.RETURN);
+        return field.getAttribute("value");
+    }
 
     public String getElementClass(WebElement element) {
         return element.getAttribute("class");

@@ -113,7 +113,7 @@ public class RegPage extends AbstractPage {
         fillRegFormWithValidData()
                 .markRegCheckbox()
                 .submitValidRegForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         return new SmsVerificationPage(driver);
     }
 
@@ -128,8 +128,12 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-    public RegPage waitForClosingTerms() {
+    RegPage waitForClosingTerms() {
         explWait.until(invisibilityOfElementLocated(By.xpath("//md-dialog")));
+        return this;
+    }
+    RegPage waitForOpeningTerms() {
+        explWait.until(visibilityOfElementLocated(By.xpath("//md-dialog")));
         return this;
     }
 

@@ -21,7 +21,7 @@ import static org.testng.Assert.*;
  */
 @Test
 public class Registration {
-    static String regPhone = "222222220", name = "Alex", surname = "Paskhin", email = "a.paskhin@gmail.com", password = "111111a";
+    static String regPhone = "222222218", name = "Alex", surname = "Paskhin", email = "a.paskhin@gmail.com", password = "111111a";
     WebDriver.Options options;
     private WebDriver driver;
     static MainPage mainPage;
@@ -67,8 +67,10 @@ public class Registration {
         mainPage = new MainPage(driver);
 
 //        mainPage.switchToConsolidationForm();
-//        regPage = mainPage.submitAnUnregNumber();
+
+//        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
 //        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+//        aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
     }
 
 //    @Test
@@ -85,19 +87,91 @@ public class Registration {
 //        }
 //    }
 
+    @Test(priority = 13)
+    public void registrationThroughConsForm() throws SQLException {
+        aboutMePage = mainPage.submitAnUnregisteredNumberThroughConsolidationForm()
+                .submitRegFormWithVerifiedData()
+                .submitSmsCodeFormWithRightCode();
+        assertTrue(aboutMePage.breadcrumbs.isDisplayed(),
+                "Page 'About me' isn't displayed after submitting right sms code!");
+        assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
+                "An entry with the phone isn't added to the userCredentials table!");
+        assertEquals(userCredentialsDAO.getUserByEmail(email).size(), 1,
+                "An entry with the email isn't added to the plainUsers table!");
+    }
+
+    @Test(priority = 12)
+    public void interactionWithTheLinkConsolidationInfo() {
+        mainPage.clickConsolidationInfo();
+        try {
+            assertTrue(mainPage.mdDialogOfConsolidationInfo.isDisplayed(),
+                    "Consolidation info isn't displayed!");
+            mainPage.closeDialogWindow();
+            mainPage.waitForClosingConsolidationInfo();
+        } catch (NoSuchElementException ex) {
+            throw new AssertionError("Info about the loans isn't opened!", ex);
+        }
+    }
+
+    @Test(priority = 12)
+    public void accessibilityOfAnAccessToPersDataTextInConsolidationForm() {
+        mainPage.clickTheTermsInConsolidationForm();
+        try {
+            assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed!");
+            mainPage.closeDialogWindow();
+            mainPage.waitForClosingTerms();
+        } catch (NoSuchElementException ex) {
+            throw new AssertionError("Terms aren't opened!", ex);
+        }
+    }
+
+    @Test(priority = 12)
+    public void enteringLettersAndSymbolsToConsolidationPhone() {
+        String def = mainPage.getValueFromConsolidationPhoneInput();
+        mainPage.inputToConsolidationPhone("qwe ы!@-");
+        assertEquals(mainPage.getValueFromConsolidationPhoneInput(), def, "Letters are inputted to phone field!");
+        mainPage.markConsolidationCheckbox()
+                .submitInvalidConsolidationForm()
+                .customWaitForPerformingJS();
+        try {
+            assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid consolidation form is submitted", ex);
+        }
+    }
+
+    @Test(priority = 12)
+    //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
+    public void incompleteConsolidationPhoneNumber() {
+        mainPage.inputToConsolidationPhone("22222222");
+        String def = mainPage.getValueFromConsolidationPhoneInput();
+        mainPage.markConsolidationCheckbox()
+                .submitInvalidConsolidationForm()
+                .customWaitForPerformingJS();
+        try {
+            assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
+            assertTrue(mainPage.elementIsRed(mainPage.consolidationPhoneInput),
+                    "Invalid field isn't highlighted with red color!");
+            assertEquals(mainPage.getValueFromConsolidationPhoneInput(), def, "Digits are deleted from input");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid consolidation form is submitted", ex);
+        }
+    }
 
     @Test(priority = 12)
     public void submittingConsolidationMainFormWhenPhoneIsBlank() {
         mainPage.markConsolidationCheckbox()
                 .inputToConsolidationPhone("")
                 .submitInvalidConsolidationForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
             mainPage.submitInvalidConsolidationForm()
-                    .waitForPerformingJS();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput),
-                    "Border of invalid consolidation field isn't highlighted with red color!");
+                    .customWaitForPerformingJS();
+            assertTrue(mainPage.elementIsRed(mainPage.consolidationPhoneInput),
+                    "Invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid consolidation form is submitted", ex);
@@ -109,7 +183,7 @@ public class Registration {
         mainPage.inputToConsolidationPhone(regPhone)
                 .uncheckConsolidationCheckbox()
                 .submitInvalidConsolidationForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(mainPage.fieldWithConsolidationCheckboxIsInvalid(),
                     "Unmarked checkbox has valid state after submitting!");
@@ -131,13 +205,13 @@ public class Registration {
                 .uncheckConsolidationCheckbox()
 //                .inputToConsolidationPhone("")
                 .submitInvalidConsolidationForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
             assertTrue(mainPage.elementIsGreen(mainPage.consolidationPhoneInput),
                     "Consolidation input isn't focused after first submitting blank consolidation form!");
             mainPage.submitInvalidConsolidationForm()
-                    .waitForPerformingJS();
+                    .customWaitForPerformingJS();
 
             assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput),
                     "Border of invalid field isn't highlighted with red color!");
@@ -154,7 +228,7 @@ public class Registration {
     public void submittingRegFormWithUnmarkedConcessionToEmailsCheckbox() {
         aboutMePage = aboutMePage.goToMyProfile()
                 .logOut()
-                .submitAnUnregNumber()
+                .submitAnUnregisteredNumberThroughPDLForm()
                 .unmarkMarketingCheckbox()
                 .submitRegFormWithVerifiedData()
                 .submitSmsCodeFormWithRightCode();
@@ -183,7 +257,7 @@ public class Registration {
     public void refreshingSmsCode() throws InterruptedException {
         String initialCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
         smsVerificationPage.refreshSmsCode()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         String newCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
 
         for (int i =0; i<10; i++) {
@@ -203,7 +277,7 @@ public class Registration {
         }
         smsVerificationPage.inputToCodeField("" + code)
                 .submitInvalSmsCodeForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(smsVerificationPage.smsCodeInput.isDisplayed());
         } catch (NoSuchElementException e) {
@@ -220,7 +294,7 @@ public class Registration {
     public void enteringInvalidSmsCode(String code) {
         smsVerificationPage.inputToCodeField(code)
                 .submitInvalSmsCodeForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(smsVerificationPage.fieldBorderIsRed(smsVerificationPage.smsCodeInput),
                     "Invalid sms code input field doesn't have red color!");
@@ -252,7 +326,7 @@ public class Registration {
                 .markRegCheckbox()
                 .inputToEmailField(plainUsersDAO.getRegisteredEmail())
                 .submitInvalRegForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
                 regPage.passwordField, regPage.passConfirmField};
         try {
@@ -271,7 +345,7 @@ public class Registration {
     public void submittingBlankRegForm() {
         regPage.setBlankValuesToRegForm()
                 .submitInvalRegForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
                 regPage.passwordField, regPage.passConfirmField};
         try {
@@ -306,7 +380,8 @@ public class Registration {
 
     @Test(priority = 4)
     public void accessibilityOfARegTermsText() {
-        regPage.clickRegTerms();
+        regPage.clickRegTerms()
+                .waitForOpeningTerms();
         assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(),
                 1, "Terms aren't opened!");
         assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(),
@@ -360,6 +435,26 @@ public class Registration {
         assertEquals(regPage.getValue(regPage.passwordField), password, "Wrong data input to password field!");
         assertTrue(regPage.fieldIsInvalid(regPage.passwordField), "Impermissible characters are allowed at the password field!");
         assertTrue(regPage.fieldBorderIsRed(regPage.passwordField), "Border of invalid field isn't highlighted with red color!");
+    }
+
+    @Test(priority = 4)
+    //при передаче на бэк срабатывает трим - обрезка пробелов, поэтому их ввод в начале конце допустим
+    public void enteringEmailWithSpacesAtTheBeginning() {
+        regPage.inputToEmailField("   a.paskhin1@gmail.com")
+                .moveFromAField(regPage.emailField);
+        assertEquals(regPage.getValue(regPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
+        assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
+        assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
+    }
+
+    @Test(priority = 4)
+    //при передаче на бэк срабатывает трим - обрезка пробелов, поэтому их ввод в начале конце допустим
+    public void enteringEmailWithSpacesAtTheEnd() {
+        regPage.inputToEmailField("a.paskhin1@gmail.com  ")
+                .moveFromAField(regPage.emailField);
+        assertEquals(regPage.getValue(regPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
+        assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
+        assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4)
@@ -438,7 +533,7 @@ public class Registration {
 
     @Test(priority = 3)
     public void successfulSubmittingPdlForm() throws SQLException {
-        regPage = mainPage.submitAnUnregNumber();
+        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
@@ -472,7 +567,8 @@ public class Registration {
             assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
             mainPage.submitInvalidPDLForm()
                     .waitForReaction();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput), "Border of invalid field isn't highlighted with red color!");
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput),
+                    "Border of invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid PDL form is submitted", ex);
@@ -483,13 +579,15 @@ public class Registration {
     //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
     public void incompletePhoneNumber() throws InterruptedException {
         mainPage.inputToPDLPhone("22222222");
-        String def = mainPage.getValueFromPhoneInput();
+        String def = mainPage.getValueFromPDLPhoneInput();
         mainPage.markPDLCheckbox()
                 .submitInvalidPDLForm()
                 .waitForReaction();
         try {
             assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
-            assertEquals(mainPage.getValueFromPhoneInput(), def, "Digits are deleted from input");
+            assertTrue(mainPage.elementIsRed(mainPage.pdlPhoneInput),
+                    "Invalid field isn't highlighted with red color!");
+            assertEquals(mainPage.getValueFromPDLPhoneInput(), def, "Digits are deleted from input");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid PDL form is submitted", ex);
@@ -499,12 +597,12 @@ public class Registration {
     @Test(priority = 2)
     public void enteringLettersAndSymbolsToPhone() {
         String def = mainPage.waitPhonePdlInputIsAccessible()
-                .getValueFromPhoneInput();
+                .getValueFromPDLPhoneInput();
         mainPage.inputToPDLPhone("qwe ы!@-");
-        assertEquals(mainPage.getValueFromPhoneInput(), def, "Letters are inputted to phone field!");
+        assertEquals(mainPage.getValueFromPDLPhoneInput(), def, "Letters are inputted to phone field!");
         mainPage.markPDLCheckbox()
                 .submitInvalidPDLForm()
-                .waitForPerformingJS();
+                .customWaitForPerformingJS();
         try {
             assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
         } catch (NoSuchElementException ex) {
@@ -551,7 +649,7 @@ public class Registration {
 
     @Test(priority = 1)
     public void accessibilityOfAnAccessToPersDataText() {
-        mainPage.clickTheTerms();
+        mainPage.clickTheTermsInPDLForm();
         try {
             assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed!");
             mainPage.closeDialogWindow();

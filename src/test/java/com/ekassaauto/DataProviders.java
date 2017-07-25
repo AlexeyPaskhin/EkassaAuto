@@ -19,8 +19,6 @@ public class DataProviders {
     public static Object[][] emailNonValid() {
         return new Object[][]{
                 {"a.paskhin1 @gmail.com"},
-                {"   a.paskhin1@gmail.com"},
-                {"a.paskhin1@gmail.com  "},
                 {"a.paskhin1@@gmail.com"},
                 {"a.paskhin1gmail.com"},
                 {"a.paskhin1@gmailcom"},
@@ -42,7 +40,8 @@ public class DataProviders {
                 {"qwerty"},
                 {"123456"},
                 {"123 456q"},
-                {" 123456q "}
+                {" 123456q"},
+                {"123456q "}
         };
     }
 

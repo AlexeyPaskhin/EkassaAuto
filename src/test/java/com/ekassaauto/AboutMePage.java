@@ -22,3 +22,5 @@ public class AboutMePage extends AbstractPage {
         smsCodeForm = new Form(findWithXPath("//form[@name='workForm']"));
     }
 }
+
+

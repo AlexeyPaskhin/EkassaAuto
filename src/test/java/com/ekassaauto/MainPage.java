@@ -4,7 +4,6 @@ import com.ekassaauto.database.entities.UserCredential;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -23,15 +22,17 @@ public class MainPage extends AbstractPage {
     @FindBy(xpath = "(//input[@name='phone'])[2]") protected WebElement consolidationPhoneInput;
     @FindBy(xpath = "//*[@type='submit']") WebElement submitPDLButton;
     @FindBy(xpath = "(//*[@type='submit'])[2]") WebElement submitConsButton;
-    @CacheLookup
     @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
     @CacheLookup
     @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']") protected WebElement mdDialogOfLoanInfo;
+    @CacheLookup
+    @FindBy(xpath = "//md-dialog[@aria-label='Kredyt konsolidacyjny ...']") protected WebElement mdDialogOfConsolidationInfo;
     @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlRegCheckbox;
     @FindBy(xpath = "(//md-checkbox[@ng-model='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") protected WebElement termsLinkInPDL;
     @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]") protected WebElement termsLinkInConsolidation;
     @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']") private WebElement linkLoanInfo;
+    @FindBy(xpath = "//div[@ng-click='showConsolidationInfo($event)']") private WebElement linkConsolidationInfo;
     @FindBy(xpath = "//div[text()='Kredyt konsolidacyjny']") WebElement consolidationOverlay;
 
 
@@ -61,7 +62,7 @@ public class MainPage extends AbstractPage {
     }
 
 
-    RegPage submitAnUnregNumber() {
+    RegPage submitAnUnregisteredNumberThroughPDLForm() {
         try {
             List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
             if (requestedUserCredentials.size() == 1) {
@@ -72,14 +73,36 @@ public class MainPage extends AbstractPage {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        //todo удалять процессы так же с камунды с данным номером
         pdlRegForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
                 .markCheckBox(pdlRegCheckbox)
                 .submit(submitPDLButton);
 
-        waitForPerformingJS();
+        customWaitForPerformingJS();
 
 ////        explWait.until(presenceOfElementLocated(By.xpath("//pdlPhoneInput[@name='name']")));
 //        explWait.until(elementToBeClickable(By.xpath("//pdlPhoneInput[@name='name']")));
+        return new RegPage(driver);
+    }
+
+    RegPage submitAnUnregisteredNumberThroughConsolidationForm() {
+        try {
+            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
+            if (requestedUserCredentials.size() == 1) {
+                userCredentialsDAO.deleteUserByPhone(regPhone);
+            } else if (requestedUserCredentials.size() > 1) {
+                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //todo удалять процессы так же с камунды с данным номером
+        consolidationRegForm.setToFieldWithOverlay(consolidationPhoneInput, regPhone)
+                .markCheckBox(consolidationRegCheckbox)
+                .submit(submitConsButton);
+
+//        customWaitForPerformingJS();
+        waitForAngularRequestsToFinish();
         return new RegPage(driver);
     }
 
@@ -118,8 +141,12 @@ public class MainPage extends AbstractPage {
         return this;
     }
 
-    String getValueFromPhoneInput() {
+    String getValueFromPDLPhoneInput() {
         return pdlRegForm.getFieldValue(pdlPhoneInput);
+    }
+
+    String getValueFromConsolidationPhoneInput() {
+        return consolidationRegForm.getValueFromFieldAtFormWIthOverlay(consolidationPhoneInput);
     }
 
     boolean inputIsInvalid(WebElement input) {
@@ -134,16 +161,27 @@ public class MainPage extends AbstractPage {
         return consolidationRegForm.getElementClass(termsLinkInConsolidation).contains("error");
     }
 
-    MainPage clickTheTerms() {
-        termsLinkInPDL.sendKeys(Keys.RETURN);     //здесь замена .click -у, потому что клик не работает всегда адекватно
+    MainPage clickTheTermsInPDLForm() {
+        termsLinkInPDL.sendKeys(Keys.RETURN);     //здесь замена .click-у, потому что клик не работает всегда адекватно
+        //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
+        return this;
+    }
+    MainPage clickTheTermsInConsolidationForm() {
+        termsLinkInConsolidation.sendKeys(Keys.RETURN);     //здесь замена .click-у, потому что клик не работает всегда адекватно
         //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 
     MainPage clickLoanInfo() {
-        linkLoanInfo.click();
+        linkLoanInfo.sendKeys(Keys.RETURN);
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Chwilówka w ...']")));
+        return this;
+    }
+    MainPage clickConsolidationInfo() {
+        linkConsolidationInfo.sendKeys(Keys.RETURN);
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Kredyt konsolidacyjny ...']")));
         return this;
     }
 
@@ -162,12 +200,16 @@ public class MainPage extends AbstractPage {
     }
 
     MainPage waitForClosingTerms() {
-        explWait.until(invisibilityOf(mdDialogOfAccessToPersData));
+        explWait.until(invisibilityOf(findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 
     MainPage waitForClosingLoanInfo() {
         explWait.until(invisibilityOf(mdDialogOfLoanInfo));
+        return this;
+    }
+    MainPage waitForClosingConsolidationInfo() {
+        explWait.until(invisibilityOf(mdDialogOfConsolidationInfo));
         return this;
     }
 

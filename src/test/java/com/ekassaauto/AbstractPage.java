@@ -1,5 +1,6 @@
 package com.ekassaauto;
 
+import com.paulhammant.ngwebdriver.NgWebDriver;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -10,21 +11,25 @@ import static com.ekassaauto.Registration.regPage;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by user on 14.03.2017.
  */
 public abstract class AbstractPage {
     protected WebDriver driver;
+    private NgWebDriver ngWebDriver;
     WebDriverWait explWait;
-    JavascriptExecutor jse;
+    JavascriptExecutor jseDriver;
 
     @FindBy(xpath = "//a[contains(text(), 'MOJE PROFIL')]") WebElement myProfileLink;
 //    @FindBy(xpath = "//div[@class='preloader ng-scope']") WebElement loader;
     public AbstractPage (WebDriver driver) {
         this.driver = driver;
         explWait = new WebDriverWait(driver, 10);
-        this.jse = (JavascriptExecutor) driver;
+        this.jseDriver = (JavascriptExecutor) driver;
+        ngWebDriver = new NgWebDriver(jseDriver);
+        driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
         PageFactory.initElements(driver, this);
     }
 
@@ -35,7 +40,7 @@ public abstract class AbstractPage {
 
     public RegPage goToNewRegPage() {
         mainPage = new MainPage(driver);
-        regPage = mainPage.submitAnUnregNumber();
+        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
         return new RegPage(driver);
     }
 
@@ -89,12 +94,16 @@ public abstract class AbstractPage {
         return checkbox.getAttribute("aria-checked").equals("true");
     }
 
-    public void waitForPerformingJS() {
+    public void customWaitForPerformingJS() {
         try {   // try - на случай, если js в каком то кейсе не начал выполнятся, попытка перехода на другую страницу не произвелась
             new WebDriverWait(driver, 1).until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 1));
         } catch (TimeoutException e) {
             return;
         }
         explWait.until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 0));
+    }
+
+    void waitForAngularRequestsToFinish() {
+        ngWebDriver.waitForAngularRequestsToFinish();
     }
 }

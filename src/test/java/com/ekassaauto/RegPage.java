@@ -1,9 +1,13 @@
 package com.ekassaauto;
 
+import com.ekassaauto.database.entities.UserCredential;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+
+import java.sql.SQLException;
+import java.util.List;
 
 import static com.ekassaauto.Registration.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
@@ -17,11 +21,13 @@ public class RegPage extends AbstractPage {
 
     @FindBy(xpath = "//input[@name='name']") WebElement nameField;
     @FindBy(xpath = "//input[@name='lastName']") WebElement lastNameField;
+    @FindBy(xpath = "//input[@name='pesel']") WebElement peselField;
+    @FindBy(xpath = "(//input[@name='phone'])[2]") WebElement registrationPhoneField;
     @FindBy (xpath = "//input[@name='email']") WebElement emailField;
-    @FindBy(xpath = "//input[@name='password']") WebElement passwordField;
+    @FindBy(xpath = "(//input[@name='password'])[2]") WebElement passwordField;
     @FindBy(xpath = "//input[@name='passwordConfirm']") WebElement passConfirmField;
-    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") WebElement termsCheckBox;
-    @FindBy(xpath = "//button[@type='submit']") WebElement regButton;
+    @FindBy(xpath = "(//md-checkbox[@name='agreedToConditions'])[2]") WebElement registrationTermsCheckBox;
+    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement regButton;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") WebElement linkRegTerms;
     @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']") WebElement marketingCheckbox;
     @FindBy(xpath = "//span[@ng-click='showMarketingAgreements($event)']") WebElement linkMarketingTerms;
@@ -32,15 +38,35 @@ public class RegPage extends AbstractPage {
     }
 
     private void initPageElements() {
-        regForm = new Form(findWithXPath("//form"));
+        regForm = new Form(findWithXPath("(//form)[2]"));
     }
 
     RegPage inputToName(String text) {
-        regForm.set(nameField, text);
+        regForm.setToFieldWithOverlay(nameField, text);
         return this;
     }
     RegPage inputToLastName(String text) {
-        regForm.set(lastNameField, text);
+        regForm.setToFieldWithOverlay(lastNameField, text);
+        return this;
+    }
+    RegPage inputToPesel(String text) {
+        regForm.setToFieldWithOverlay(peselField, text);
+        return this;
+    }
+    RegPage inputToRegistrationPhone(String text) {
+        try {
+            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
+            if (requestedUserCredentials.size() == 1) {
+                userCredentialsDAO.deleteUserByPhone(regPhone);
+            } else if (requestedUserCredentials.size() > 1) {
+                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //todo удалять процессы так же с камунды с данным номером
+
+        regForm.setToFieldWithOverlay(registrationPhoneField, text);
         return this;
     }
 
@@ -49,23 +75,25 @@ public class RegPage extends AbstractPage {
     }
 
     public RegPage inputToEmailField(String text) {
-        regForm.set(emailField, text);
+        regForm.setToFieldWithOverlay(emailField, text);
         return this;
     }
 
     public RegPage inputToPasswordField(String text) {
-        regForm.set(passwordField, text);
+        regForm.setToFieldWithOverlay(passwordField, text);
         return this;
     }
 
     public RegPage inputToPassConfirmField(String pass) {
-        regForm.set(passConfirmField, pass);
+        regForm.setToFieldWithOverlay(passConfirmField, pass);
         return this;
     }
 
     RegPage fillRegFormWithValidData() {
         inputToName(name)
                 .inputToLastName(surname)
+                .inputToPesel(pesel)
+                .inputToRegistrationPhone(regPhone)
                 .inputToEmailField(email)
                 .inputToPasswordField(password)
                 .inputToPassConfirmField(password);
@@ -85,12 +113,12 @@ public class RegPage extends AbstractPage {
     }
 
     RegPage markRegCheckbox() {
-        regForm.markCheckBox(termsCheckBox);
+        regForm.markCheckBoxWithOverlay(registrationTermsCheckBox);
         return this;
     }
 
     RegPage unmarkRegCheckbox() {
-        regForm.uncheck(termsCheckBox);
+        regForm.uncheck(registrationTermsCheckBox);
         return this;
     }
 
@@ -110,10 +138,13 @@ public class RegPage extends AbstractPage {
     }
 
     public SmsVerificationPage submitRegFormWithVerifiedData() {
+//        if (!regButton.isEnabled()) {
+            findWithXPath("(//div[@class='auth__overlay'])[2]").click();
+//        }
         fillRegFormWithValidData()
                 .markRegCheckbox()
                 .submitValidRegForm()
-                .customWaitForPerformingJS();
+                .waitForAngularRequestsToFinish();
         return new SmsVerificationPage(driver);
     }
 

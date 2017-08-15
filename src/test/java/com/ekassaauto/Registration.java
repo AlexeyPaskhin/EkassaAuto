@@ -6,7 +6,6 @@ import com.ekassaauto.database.dao.UserCredentialsDAO;
 import com.ekassaauto.database.dao.PlainUsersDAO;
 import io.github.bonigarcia.wdm.*;
 import org.openqa.selenium.*;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.*;
 
@@ -21,18 +20,21 @@ import static org.testng.Assert.*;
  */
 @Test
 public class Registration {
-    static String regPhone = "222222218", name = "Alex", surname = "Paskhin", email = "a.paskhin@gmail.com", password = "111111a";
-    WebDriver.Options options;
-    private WebDriver driver;
+    protected static WebDriver driver;
+    static String regPhone = "222222218", name = "Alex", surname = "Paskhin", pesel = "92102107697",
+            email = "a.paskhin@gmail.com", password = "111111a", socialNumber = "ATC339884",
+            bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
+            testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", empPhoneField = "987654321";
+    static WebDriver.Options options;
     static MainPage mainPage;
     static RegPage regPage;
     static AboutMePage aboutMePage;
-    static MyProfilePage myProfilePage;
+    static PdlOfferPage pdlOfferPage;
+    //    static MyProfilePage myProfilePage;
     static SmsVerificationPage smsVerificationPage;
     static UserCredentialsDAO userCredentialsDAO;
-    private PlainUsersDAO plainUsersDAO;
     static SentSmsDAO sentSmsDAO;
-
+    static PlainUsersDAO plainUsersDAO;
 
     @BeforeSuite
     public void createDBConnection() {
@@ -51,6 +53,7 @@ public class Registration {
 //        EdgeDriverManager.getInstance().setup();
 //        PhantomJsDriverManager.getInstance().setup();
 //        FirefoxDriverManager.getInstance().setup();
+//        driver = new FirefoxDriver();
 //        ProxyServer server = new ProxyServer(4444);
 //        server.start();
 //        server.autoBasicAuthorization("test.ekassa.com", "ekassauser", "Trfccf098");
@@ -71,6 +74,10 @@ public class Registration {
 //        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
 //        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
 //        aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
+//        mainPage = new MainPage(driver).switchToConsolidationForm();
+//        mainPage.submitAnUnregisteredNumberThroughConsolidationForm()
+//                .submitRegFormWithVerifiedData()
+//                .submitSmsCodeFormWithRightCode();
     }
 
 //    @Test
@@ -87,7 +94,14 @@ public class Registration {
 //        }
 //    }
 
-    @Test(priority = 13)
+    @Test(priority = 15)
+    public void inscriptionInTheConsolidationSubmitButtonAfterCreationConsolidationProcess() {
+        mainPage = new MainPage(driver)
+                .switchToConsolidationForm();
+        assertEquals(mainPage.goToNextTaskConsolidationButton.getText(), "KOLEJNY KROK");
+    }
+
+    @Test(priority = 14)
     public void registrationThroughConsForm() throws SQLException {
         aboutMePage = mainPage.submitAnUnregisteredNumberThroughConsolidationForm()
                 .submitRegFormWithVerifiedData()
@@ -100,7 +114,7 @@ public class Registration {
                 "An entry with the email isn't added to the plainUsers table!");
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     public void interactionWithTheLinkConsolidationInfo() {
         mainPage.clickConsolidationInfo();
         try {
@@ -113,7 +127,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     public void accessibilityOfAnAccessToPersDataTextInConsolidationForm() {
         mainPage.clickTheTermsInConsolidationForm();
         try {
@@ -125,7 +139,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     public void enteringLettersAndSymbolsToConsolidationPhone() {
         String def = mainPage.getValueFromConsolidationPhoneInput();
         mainPage.inputToConsolidationPhone("qwe ы!@-");
@@ -141,7 +155,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     //в поле для номера есть маска, поэтому оно всегда имеет непустой атрибут "value"
     public void incompleteConsolidationPhoneNumber() {
         mainPage.inputToConsolidationPhone("22222222");
@@ -160,7 +174,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     public void submittingConsolidationMainFormWhenPhoneIsBlank() {
         mainPage.markConsolidationCheckbox()
                 .inputToConsolidationPhone("")
@@ -170,7 +184,8 @@ public class Registration {
             assertTrue(mainPage.inputIsInvalid(mainPage.consolidationPhoneInput));
             mainPage.submitInvalidConsolidationForm()
                     .customWaitForPerformingJS();
-            assertTrue(mainPage.elementIsRed(mainPage.consolidationPhoneInput),
+            assertTrue(mainPage.elementIsRed(mainPage.consolidationPhoneInput) ||
+                            mainPage.elementIsRed(mainPage.findWithXPath("(//*[contains(text(), 'Telefon komórkowy')])[2]")),
                     "Invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
@@ -178,7 +193,7 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 13)
     public void uncheckedConsolidationCheckbox() {
         mainPage.inputToConsolidationPhone(regPhone)
                 .uncheckConsolidationCheckbox()
@@ -197,7 +212,7 @@ public class Registration {
 
     //здесь когда поле ввода приобретает зеленый цвет - оно становится в фокусе
     //тест должен выполнятся с нетронутым инпутом телефона, поэтому все тесты со взаимодествием с инпутом имеют приоритет выше
-    @Test(priority = 11)
+    @Test(priority = 12)
     public void submittingEmptyConsolidationForm() {
         aboutMePage.goToMyProfile()
                 .logOut();
@@ -213,7 +228,8 @@ public class Registration {
             mainPage.submitInvalidConsolidationForm()
                     .customWaitForPerformingJS();
 
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput),
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.consolidationPhoneInput) ||
+                            mainPage.elementIsRed(mainPage.findWithXPath("(//*[contains(text(), 'Telefon komórkowy')])[2]")),
                     "Border of invalid field isn't highlighted with red color!");
             assertTrue(mainPage.fieldWithConsolidationCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
             assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
@@ -222,6 +238,13 @@ public class Registration {
             mainPage = new MainPage(driver);
             throw new AssertionError("Invalid consolidation form is submitted", ex);
         }
+    }
+
+    @Test(priority = 11)
+    public void inscriptionInThePdlSubmitButtonAfterCreationPdlProcess() {
+        mainPage = new MainPage(driver);
+        mainPage.waitForAngularRequestsToFinish();
+        assertEquals(mainPage.goToNextTaskPdlButton.getText(), "KOLEJNY KROK");
     }
 
     @Test(priority = 10)
@@ -260,7 +283,7 @@ public class Registration {
                 .customWaitForPerformingJS();
         String newCode = sentSmsDAO.getSmsCodeByPhone(regPhone);
 
-        for (int i =0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             if (newCode.equals(initialCode)) {
                 Thread.sleep(500);
                 newCode = sentSmsDAO.getSmsCodeByPhone(regPhone); //ждем на всякий случай, чтоб обновился код в базе
@@ -397,7 +420,7 @@ public class Registration {
                 .submitInvalRegForm()
                 .waitForReaction();
         try {
-            assertTrue(regPage.fieldIsInvalid(regPage.termsCheckBox), "Unmarked checkbox has valid state!");
+            assertTrue(regPage.fieldIsInvalid(regPage.registrationTermsCheckBox), "Unmarked checkbox has valid state!");
             assertTrue(regPage.elementIsRed(regPage.linkRegTerms),
                     "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
@@ -567,7 +590,8 @@ public class Registration {
             assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
             mainPage.submitInvalidPDLForm()
                     .waitForReaction();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput),
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput)
+                            || mainPage.elementIsRed(mainPage.findWithXPath("//*[contains(text(), 'Telefon komórkowy')]")),
                     "Border of invalid field isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
@@ -618,14 +642,16 @@ public class Registration {
         mainPage.uncheckPDLCheckbox()
 //                .inputToPDLPhone("")
                 .submitInvalidPDLForm()
-                .waitForReaction();
+                .waitForAngularRequestsToFinish();
         try {
             assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
             assertTrue(mainPage.elementIsGreen(mainPage.pdlPhoneInput),
                     "PDL input isn't focused after first submitting blank PDL form!");
             mainPage.submitInvalidPDLForm()
                     .waitForReaction();
-            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput), "Border of invalid field isn't highlighted with red color!");
+            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput) ||
+                            mainPage.elementIsRed(mainPage.findWithXPath("//*[contains(text(), 'Telefon komórkowy')]")),
+                    "Border of invalid field isn't highlighted with red color!");
             assertTrue(mainPage.fieldWithPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
             assertTrue(mainPage.elementIsRed(mainPage.termsLinkInPDL),
                     "The link to the terms near to invalid checkbox isn't highlighted with red color!");
@@ -666,7 +692,7 @@ public class Registration {
     }
 
 
-    @AfterClass
+    @AfterSuite
     public void teardown() {
         if (driver != null) {
             driver.quit();

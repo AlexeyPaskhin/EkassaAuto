@@ -1,5 +1,6 @@
 package com.ekassaauto;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
@@ -9,6 +10,12 @@ import org.openqa.selenium.WebElement;
 public class Form extends AbstractElement {
     public Form(WebElement element) {
         super(element);
+    }
+
+    Form selectFromListBox(WebElement listBox, String value) {
+        listBox.click();
+        listBox.findElement(By.xpath("//div[@aria-hidden='false']//md-option[@value='" + value + "']")).click();
+        return this;
     }
 
     public Form set(String xplocator, String value) {
@@ -51,6 +58,11 @@ public class Form extends AbstractElement {
     public Form markCheckBox(WebElement chBox) {
         if (chBox.getAttribute("aria-checked").equals("false"))
             chBox.click();
+        return this;
+    }
+    public Form markCheckBoxWithOverlay(WebElement chBox) {
+        if (chBox.getAttribute("aria-checked").equals("false"))
+            chBox.sendKeys(Keys.RETURN);
         return this;
     }
 

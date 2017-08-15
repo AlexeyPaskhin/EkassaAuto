@@ -6,6 +6,7 @@
         <!--<parameter name="minNumberOfImages" value="6" />-->
         <classes>
             <class name="com.ekassaauto.Registration" />
+            <!--<class name="com.ekassaauto.SuccessfulPDLApplications" />-->
         </classes>
 
 

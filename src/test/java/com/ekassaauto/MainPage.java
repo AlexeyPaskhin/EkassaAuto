@@ -15,19 +15,21 @@ import static com.ekassaauto.Registration.*;
  * Created by user on 10.03.2017.
  */
 public class MainPage extends AbstractPage {
-    private Form pdlRegForm;
-    private Form consolidationRegForm;
+    private Form pdlMainForm;
+    private Form consolidationMainForm;
 
     @FindBy(xpath = "//input[@name='phone']") protected WebElement pdlPhoneInput;
     @FindBy(xpath = "(//input[@name='phone'])[2]") protected WebElement consolidationPhoneInput;
-    @FindBy(xpath = "//*[@type='submit']") WebElement submitPDLButton;
-    @FindBy(xpath = "(//*[@type='submit'])[2]") WebElement submitConsButton;
+    @FindBy(xpath = "//button[@type='submit']") WebElement submitPDLButton;
+    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement submitConsButton;
+    @FindBy(xpath = "//*[@ng-click='goToNextTask(false)']") WebElement goToNextTaskPdlButton;
+    @FindBy(xpath = "//*[@ng-click='goToNextTask(true)']") WebElement goToNextTaskConsolidationButton;
     @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
     @CacheLookup
     @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']") protected WebElement mdDialogOfLoanInfo;
     @CacheLookup
     @FindBy(xpath = "//md-dialog[@aria-label='Kredyt konsolidacyjny ...']") protected WebElement mdDialogOfConsolidationInfo;
-    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlRegCheckbox;
+    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlMainScreenCheckbox;
     @FindBy(xpath = "(//md-checkbox[@ng-model='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") protected WebElement termsLinkInPDL;
     @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]") protected WebElement termsLinkInConsolidation;
@@ -47,21 +49,28 @@ public class MainPage extends AbstractPage {
     }
 
     private void initPageElements() {
-        pdlRegForm = new Form(findWithXPath("//form"));
-        consolidationRegForm = new Form(findWithXPath("(//form)[2]"));
+        pdlMainForm = new Form(findWithXPath("//form"));
+        consolidationMainForm = new Form(findWithXPath("(//form)[2]"));
     }
 
     MainPage submitInvalidPDLForm() {
-        pdlRegForm.submit(submitPDLButton);
+        pdlMainForm.submit(submitPDLButton);
         return this;
     }
 
     MainPage submitInvalidConsolidationForm() {
-        pdlRegForm.submit(submitConsButton);
+        pdlMainForm.submit(submitConsButton);
         return this;
     }
 
+    RegPage submitPdlFormInUnauthorizedState() {
+        pdlMainForm.markCheckBoxWithOverlay(pdlMainScreenCheckbox)
+                .submit(submitPDLButton);
+        waitForAngularRequestsToFinish();
+        return new RegPage(driver);
+    }
 
+    @Deprecated
     RegPage submitAnUnregisteredNumberThroughPDLForm() {
         try {
             List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
@@ -74,8 +83,8 @@ public class MainPage extends AbstractPage {
             e.printStackTrace();
         }
         //todo удалять процессы так же с камунды с данным номером
-        pdlRegForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
-                .markCheckBox(pdlRegCheckbox)
+        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
+                .markCheckBox(pdlMainScreenCheckbox)
                 .submit(submitPDLButton);
 
         customWaitForPerformingJS();
@@ -97,7 +106,7 @@ public class MainPage extends AbstractPage {
             e.printStackTrace();
         }
         //todo удалять процессы так же с камунды с данным номером
-        consolidationRegForm.setToFieldWithOverlay(consolidationPhoneInput, regPhone)
+        consolidationMainForm.setToFieldWithOverlay(consolidationPhoneInput, regPhone)
                 .markCheckBox(consolidationRegCheckbox)
                 .submit(submitConsButton);
 
@@ -107,46 +116,46 @@ public class MainPage extends AbstractPage {
     }
 
     PasswordPage submitExistUserRegForm() {
-        pdlRegForm.submit(submitPDLButton);
+        pdlMainForm.submit(submitPDLButton);
         return new PasswordPage(driver);
     }
 
     MainPage markPDLCheckbox() {
-        pdlRegForm.markCheckBox(pdlRegCheckbox);
+        pdlMainForm.markCheckBox(pdlMainScreenCheckbox);
         return this;
     }
     MainPage markConsolidationCheckbox() {
-        consolidationRegForm.markCheckBox(consolidationRegCheckbox);
+        consolidationMainForm.markCheckBox(consolidationRegCheckbox);
         return this;
     }
 
     MainPage uncheckPDLCheckbox() {
-        pdlRegForm.uncheck(pdlRegCheckbox);
+        pdlMainForm.uncheck(pdlMainScreenCheckbox);
         return this;
     }
 
     MainPage uncheckConsolidationCheckbox() {
-        consolidationRegForm.uncheck(consolidationRegCheckbox);
+        consolidationMainForm.uncheck(consolidationRegCheckbox);
         return this;
     }
 
     MainPage inputToPDLPhone(String data) {
 //        pdlPhoneInput.sendKeys(data);
-        pdlRegForm.setToFieldWithOverlay(pdlPhoneInput, data);
+        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, data);
         return this;
     }
 
     MainPage inputToConsolidationPhone(String data) {
-        pdlRegForm.setToFieldWithOverlay(consolidationPhoneInput, data);
+        pdlMainForm.setToFieldWithOverlay(consolidationPhoneInput, data);
         return this;
     }
 
     String getValueFromPDLPhoneInput() {
-        return pdlRegForm.getFieldValue(pdlPhoneInput);
+        return pdlMainForm.getFieldValue(pdlPhoneInput);
     }
 
     String getValueFromConsolidationPhoneInput() {
-        return consolidationRegForm.getValueFromFieldAtFormWIthOverlay(consolidationPhoneInput);
+        return consolidationMainForm.getValueFromFieldAtFormWIthOverlay(consolidationPhoneInput);
     }
 
     boolean inputIsInvalid(WebElement input) {
@@ -154,11 +163,11 @@ public class MainPage extends AbstractPage {
     }
 
     boolean fieldWithPDLCheckboxIsInvalid() {
-        return pdlRegForm.getElementClass(termsLinkInPDL).contains("error");
+        return pdlMainForm.getElementClass(termsLinkInPDL).contains("error");
     }
 
     boolean fieldWithConsolidationCheckboxIsInvalid() {
-        return consolidationRegForm.getElementClass(termsLinkInConsolidation).contains("error");
+        return consolidationMainForm.getElementClass(termsLinkInConsolidation).contains("error");
     }
 
     MainPage clickTheTermsInPDLForm() {

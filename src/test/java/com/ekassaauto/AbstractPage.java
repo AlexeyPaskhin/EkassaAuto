@@ -33,6 +33,12 @@ public abstract class AbstractPage {
         PageFactory.initElements(driver, this);
     }
 
+    AbstractPage scrollToElement(WebElement element) {
+        jseDriver.executeScript("arguments[0].scrollIntoView(true);", element);
+        explWait.until(visibilityOf(element));
+        return this;
+    }
+
     MyProfilePage goToMyProfile() {
         myProfileLink.click();
         return new MyProfilePage(driver);
@@ -79,7 +85,7 @@ public abstract class AbstractPage {
 
     public boolean elementIsRed(WebElement element) {
 //        System.out.println(element.getCssValue("color"));
-        return element.getCssValue("color").equals("rgba(255, 0, 0, 1)");
+        return element.getCssValue("color").contains("255, 0, 0");
     }
 
     void goBack() {
@@ -87,7 +93,8 @@ public abstract class AbstractPage {
     }
 
     public boolean elementIsGreen(WebElement element) {
-        return element.getCssValue("color").equals("rgba(67, 160, 71, 1)");
+//                System.out.println(element.getCssValue("color"));
+        return element.getCssValue("color").contains("67, 160, 71");
     }
 
     public boolean checkboxIsMarked(WebElement checkbox) {
@@ -103,7 +110,8 @@ public abstract class AbstractPage {
         explWait.until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 0));
     }
 
-    void waitForAngularRequestsToFinish() {
+    AbstractPage waitForAngularRequestsToFinish() {
         ngWebDriver.waitForAngularRequestsToFinish();
+        return this;
     }
 }

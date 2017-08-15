@@ -37,7 +37,7 @@ public class SmsVerificationPage extends AbstractPage {
     AboutMePage submitSmsCodeFormWithRightCode() {
         inputToCodeField(sentSmsDAO.getSmsCodeByPhone(regPhone));
         smsCodeForm.submit(smsCodeSubmitButton);
-        customWaitForPerformingJS();
+        waitForAngularRequestsToFinish();
         return new AboutMePage(driver);
     }
 

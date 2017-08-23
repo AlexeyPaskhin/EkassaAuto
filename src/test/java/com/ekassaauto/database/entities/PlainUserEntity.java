@@ -15,6 +15,8 @@ public class PlainUserEntity {
     @Column(name = "firstname")
     private String firstName;
     private String lastName;
+    private String account;
+    private String pesel;
     @Column(name = "ismarketingdistribution")
     private Boolean isMarketingDistribution;
 
@@ -48,6 +50,22 @@ public class PlainUserEntity {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getPesel() {
+        return pesel;
+    }
+
+    public void setPesel(String pesel) {
+        this.pesel = pesel;
     }
 
     public Boolean getMarketingDistribution() {

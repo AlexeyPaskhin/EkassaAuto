@@ -1,15 +1,16 @@
 package com.ekassaauto;
 
 import com.ekassaauto.database.PersistenceManager;
+import com.ekassaauto.database.dao.InstWormCacheDAO;
 import com.ekassaauto.database.dao.PlainUsersDAO;
 import com.ekassaauto.database.dao.SentSmsDAO;
 import com.ekassaauto.database.dao.UserCredentialsDAO;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import static com.ekassaauto.Registration.*;
@@ -25,10 +26,11 @@ public class SuccessfulPDLApplications {
         userCredentialsDAO = new UserCredentialsDAO(entityManager);
         plainUsersDAO = new PlainUsersDAO(entityManager);
         sentSmsDAO = new SentSmsDAO(entityManager);
+        instWormCacheDAO = new InstWormCacheDAO(entityManager);
     }
 
     @BeforeClass
-    public void preparation() {
+    public void preparation() throws SQLException {
 //        String property = System.getProperty("user.dir") + "/drivers/chromedriver.exe";
 //        System.setProperty("webdriver.chrome.driver", property);
 //        InternetExplorerDriverManager.getInstance().setup();
@@ -54,21 +56,31 @@ public class SuccessfulPDLApplications {
 
 //        mainPage.switchToConsolidationForm();
 
-//        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
-//        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+//        authPage = mainPage.submitPdlFormInUnauthorizedState();
+//        aboutMePage = authPage.submitRegFormWithVerifiedData();
+//        aboutMePage.cleanInstWormCache();
+//        pdlOfferPage = aboutMePage.submitAboutMePageWithAcceptableData();
+//        bankAccountVerificationPage = pdlOfferPage.passingPdlOfferPageWithDefaultProposalWithoutBankCache();
+//        congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
 
-        regPage = mainPage.submitPdlFormInUnauthorizedState();
-        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
-        aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
-        pdlOfferPage = aboutMePage.submitAboutMePageWithAcceptableData();
     }
 
     @Test(priority = 15)
-    public void firstAcceptableApplicationOnNewAccount() {
-        mainPage = new MainPage(driver);
-        System.out.println("kek");
+    public void firstAcceptableApplicationOnNewAccount() throws SQLException {
+        authPage = mainPage.submitPdlFormInUnauthorizedState();
+        aboutMePage = authPage.submitRegFormWithVerifiedData();
+        aboutMePage.cleanInstWormCache();
+        pdlOfferPage = aboutMePage.submitAboutMePageWithAcceptableData();
+        bankAccountVerificationPage = pdlOfferPage.passingPdlOfferPageWithDefaultProposalWithoutBankCache();
+        congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
     }
 
+    @Test(priority = 16)
+    public void cpaPdlProcessOfRegisteredClient() {
+        congratulationPage.goToMyProfile()
+                .logOut();
+
+    }
 
     @AfterSuite
     public void teardown() {

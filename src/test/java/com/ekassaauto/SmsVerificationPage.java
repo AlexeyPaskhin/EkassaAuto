@@ -48,8 +48,8 @@ public class SmsVerificationPage extends AbstractPage {
     
     SmsVerificationPage goToNewSmsCodePage() {
         mainPage = new MainPage(driver);
-        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
-        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+        authPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
+//        smsVerificationPage = authPage.submitRegFormWithVerifiedData();
         return this;
     }
 

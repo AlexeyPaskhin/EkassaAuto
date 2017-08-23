@@ -6,8 +6,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import static com.ekassaauto.Registration.mainPage;
-import static com.ekassaauto.Registration.regPage;
+import static com.ekassaauto.Registration.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import java.util.List;
@@ -33,6 +32,16 @@ public abstract class AbstractPage {
         PageFactory.initElements(driver, this);
     }
 
+
+    public AbstractPage selectFromListBoxByText(WebElement listBox, String textInOption) {
+        listBox.click();
+        listBox.findElement(By.xpath("//div[@aria-hidden='false']//md-option/div[contains(text(), '"
+                + textInOption + "')]/..")).sendKeys(Keys.RETURN);  //тоже какой-то md-backdrop оверлей, приходится костылить
+        //есть дублирующиеся варианты в разных листбоксах на странице, поэтому с помощью @aria-hidden='false'
+        //выбираем только те элементы, что видимы на странице(там, где листбокс открыт)
+        return this;
+    }
+
     AbstractPage scrollToElement(WebElement element) {
         jseDriver.executeScript("arguments[0].scrollIntoView(true);", element);
         explWait.until(visibilityOf(element));
@@ -44,10 +53,10 @@ public abstract class AbstractPage {
         return new MyProfilePage(driver);
     }
 
-    public RegPage goToNewRegPage() {
+    public AuthPage goToNewRegPage() {
         mainPage = new MainPage(driver);
-        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
-        return new RegPage(driver);
+        authPage = mainPage.submitPdlFormInUnauthorizedState();
+        return new AuthPage(driver);
     }
 
     WebElement findWithXPath(String text) {

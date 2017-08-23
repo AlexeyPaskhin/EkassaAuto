@@ -1,12 +1,8 @@
 package com.ekassaauto;
 
-import com.ekassaauto.database.entities.UserCredential;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
-
-import java.sql.SQLException;
-import java.util.List;
 
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 import static com.ekassaauto.Registration.*;
@@ -20,8 +16,8 @@ public class MainPage extends AbstractPage {
 
     @FindBy(xpath = "//input[@name='phone']") protected WebElement pdlPhoneInput;
     @FindBy(xpath = "(//input[@name='phone'])[2]") protected WebElement consolidationPhoneInput;
-    @FindBy(xpath = "//button[@type='submit']") WebElement submitPDLButton;
-    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement submitConsButton;
+    @FindBy(xpath = "//button[@type='submit']") WebElement startPdlProcessButton;
+    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement startConsProcessButton;
     @FindBy(xpath = "//*[@ng-click='goToNextTask(false)']") WebElement goToNextTaskPdlButton;
     @FindBy(xpath = "//*[@ng-click='goToNextTask(true)']") WebElement goToNextTaskConsolidationButton;
     @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
@@ -54,69 +50,71 @@ public class MainPage extends AbstractPage {
     }
 
     MainPage submitInvalidPDLForm() {
-        pdlMainForm.submit(submitPDLButton);
+        pdlMainForm.submit(startPdlProcessButton);
         return this;
     }
 
     MainPage submitInvalidConsolidationForm() {
-        pdlMainForm.submit(submitConsButton);
+        pdlMainForm.submit(startConsProcessButton);
         return this;
     }
 
-    RegPage submitPdlFormInUnauthorizedState() {
+    AuthPage submitPdlFormInUnauthorizedState() {
+        //todo Add checking on presence of log in
         pdlMainForm.markCheckBoxWithOverlay(pdlMainScreenCheckbox)
-                .submit(submitPDLButton);
+                .submit(startPdlProcessButton);
         waitForAngularRequestsToFinish();
-        return new RegPage(driver);
+        return new AuthPage(driver);
     }
 
     @Deprecated
-    RegPage submitAnUnregisteredNumberThroughPDLForm() {
-        try {
-            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
-            if (requestedUserCredentials.size() == 1) {
-                userCredentialsDAO.deleteUserByPhone(regPhone);
-            } else if (requestedUserCredentials.size() > 1) {
-                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    AuthPage submitAnUnregisteredNumberThroughPDLForm() {
+//        try {
+//            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
+//            if (requestedUserCredentials.size() == 1) {
+//                userCredentialsDAO.deleteUserByPhone(regPhone);
+//            } else if (requestedUserCredentials.size() > 1) {
+//                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
         //todo удалять процессы так же с камунды с данным номером
         pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
                 .markCheckBox(pdlMainScreenCheckbox)
-                .submit(submitPDLButton);
+                .submit(startPdlProcessButton);
 
         customWaitForPerformingJS();
 
 ////        explWait.until(presenceOfElementLocated(By.xpath("//pdlPhoneInput[@name='name']")));
 //        explWait.until(elementToBeClickable(By.xpath("//pdlPhoneInput[@name='name']")));
-        return new RegPage(driver);
+        return new AuthPage(driver);
     }
 
-    RegPage submitAnUnregisteredNumberThroughConsolidationForm() {
-        try {
-            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
-            if (requestedUserCredentials.size() == 1) {
-                userCredentialsDAO.deleteUserByPhone(regPhone);
-            } else if (requestedUserCredentials.size() > 1) {
-                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    @Deprecated
+    AuthPage submitAnUnregisteredNumberThroughConsolidationForm() {
+//        try {
+//            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
+//            if (requestedUserCredentials.size() == 1) {
+//                userCredentialsDAO.deleteUserByPhone(regPhone);
+//            } else if (requestedUserCredentials.size() > 1) {
+//                throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
         //todo удалять процессы так же с камунды с данным номером
         consolidationMainForm.setToFieldWithOverlay(consolidationPhoneInput, regPhone)
                 .markCheckBox(consolidationRegCheckbox)
-                .submit(submitConsButton);
+                .submit(startConsProcessButton);
 
 //        customWaitForPerformingJS();
         waitForAngularRequestsToFinish();
-        return new RegPage(driver);
+        return new AuthPage(driver);
     }
 
     PasswordPage submitExistUserRegForm() {
-        pdlMainForm.submit(submitPDLButton);
+        pdlMainForm.submit(startPdlProcessButton);
         return new PasswordPage(driver);
     }
 
@@ -204,7 +202,7 @@ public class MainPage extends AbstractPage {
 
     void waitForReaction() throws InterruptedException {
         Thread.sleep(1000);
-        explWait.until(or(elementToBeClickable(submitPDLButton),
+        explWait.until(or(elementToBeClickable(startPdlProcessButton),
                 elementToBeClickable(By.xpath("//input[@name='name']"))));
     }
 
@@ -224,7 +222,7 @@ public class MainPage extends AbstractPage {
 
     MainPage waitForOpennessOfPDLCalc() {
 //        explWait.until(invisibilityOf((findWithXPath("//*[text()='Chwilówki']"))));
-        explWait.until(elementToBeClickable(termsLinkInPDL));
+        explWait.until(elementToBeClickable(startPdlProcessButton));
         return this;
     }
 

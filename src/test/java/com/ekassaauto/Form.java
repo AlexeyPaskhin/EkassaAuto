@@ -12,13 +12,16 @@ public class Form extends AbstractElement {
         super(element);
     }
 
-    Form selectFromListBox(WebElement listBox, String value) {
+    Form selectFromListBoxByValue(WebElement listBox, String value) {
         listBox.click();
         listBox.findElement(By.xpath("//div[@aria-hidden='false']//md-option[@value='" + value + "']")).click();
+        //есть дублирующиеся варианты в разных листбоксах на странице, поэтому с помощью @aria-hidden='false'
+        //выбираем только те элементы, что видимы на странице(там, где листбокс открыт)
         return this;
     }
 
     public Form set(String xplocator, String value) {
+        findWithXPath(xplocator).click();
         findWithXPath(xplocator).clear();
         findWithXPath(xplocator).sendKeys(value);
         return this;
@@ -32,6 +35,7 @@ public class Form extends AbstractElement {
     }
 
     public Form set(WebElement field, String value) {
+        field.click();
         field.clear();
         field.click();
         field.sendKeys(value);
@@ -78,5 +82,11 @@ public class Form extends AbstractElement {
 
     void submit(WebElement submitButton) {
         submitButton.click();
+    }
+
+    Form markRadioButton(WebElement radioButton) {
+        if (radioButton.getAttribute("aria-checked").equals("false"))
+            radioButton.click();
+        return this;
     }
 }

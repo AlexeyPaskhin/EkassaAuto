@@ -16,44 +16,44 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 /**
  * Created by user on 13.04.2017.
  */
-public class RegPage extends AbstractPage {
+public class AuthPage extends AbstractPage {
     private Form regForm;
 
     @FindBy(xpath = "//input[@name='name']") WebElement nameField;
     @FindBy(xpath = "//input[@name='lastName']") WebElement lastNameField;
     @FindBy(xpath = "//input[@name='pesel']") WebElement peselField;
-    @FindBy(xpath = "(//input[@name='phone'])[2]") WebElement registrationPhoneField;
+    @FindBy(xpath = "//input[@name='phone']") WebElement registrationPhoneField;
     @FindBy (xpath = "//input[@name='email']") WebElement emailField;
     @FindBy(xpath = "(//input[@name='password'])[2]") WebElement passwordField;
     @FindBy(xpath = "//input[@name='passwordConfirm']") WebElement passConfirmField;
-    @FindBy(xpath = "(//md-checkbox[@name='agreedToConditions'])[2]") WebElement registrationTermsCheckBox;
-    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement regButton;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") WebElement termsCheckBox;
+    @FindBy(xpath = "//button[@type='submit']") WebElement authForwardButton;
     @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") WebElement linkRegTerms;
     @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']") WebElement marketingCheckbox;
     @FindBy(xpath = "//span[@ng-click='showMarketingAgreements($event)']") WebElement linkMarketingTerms;
 
-    public RegPage(WebDriver driver) {
+    public AuthPage(WebDriver driver) {
         super(driver);
         initPageElements();
     }
 
     private void initPageElements() {
-        regForm = new Form(findWithXPath("(//form)[2]"));
+        regForm = new Form(findWithXPath("//form"));
     }
 
-    RegPage inputToName(String text) {
+    AuthPage inputToName(String text) {
         regForm.setToFieldWithOverlay(nameField, text);
         return this;
     }
-    RegPage inputToLastName(String text) {
+    AuthPage inputToLastName(String text) {
         regForm.setToFieldWithOverlay(lastNameField, text);
         return this;
     }
-    RegPage inputToPesel(String text) {
+    AuthPage inputToPesel(String text) {
         regForm.setToFieldWithOverlay(peselField, text);
         return this;
     }
-    RegPage inputToRegistrationPhone(String text) {
+    AuthPage enterUnregisteredPhoneToPhoneInput(String text) {
         try {
             List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
             if (requestedUserCredentials.size() == 1) {
@@ -66,7 +66,7 @@ public class RegPage extends AbstractPage {
         }
         //todo удалять процессы так же с камунды с данным номером
 
-        regForm.setToFieldWithOverlay(registrationPhoneField, text);
+        regForm.set(registrationPhoneField, text);
         return this;
     }
 
@@ -74,36 +74,36 @@ public class RegPage extends AbstractPage {
         return regForm.getFieldValue(field);
     }
 
-    public RegPage inputToEmailField(String text) {
+    public AuthPage inputToEmailField(String text) {
         regForm.setToFieldWithOverlay(emailField, text);
         return this;
     }
 
-    public RegPage inputToPasswordField(String text) {
+    public AuthPage inputToPasswordField(String text) {
         regForm.setToFieldWithOverlay(passwordField, text);
         return this;
     }
 
-    public RegPage inputToPassConfirmField(String pass) {
+    public AuthPage inputToPassConfirmField(String pass) {
         regForm.setToFieldWithOverlay(passConfirmField, pass);
         return this;
     }
 
-    RegPage fillRegFormWithValidData() {
+    AuthPage fillRegFormWithValidData() {
         inputToName(name)
-                .inputToLastName(surname)
-                .inputToPesel(pesel)
-                .inputToRegistrationPhone(regPhone)
-                .inputToEmailField(email)
-                .inputToPasswordField(password)
-                .inputToPassConfirmField(password);
+                .inputToLastName(lastName)
+//                .inputToPesel(pesel)
+                .enterUnregisteredPhoneToPhoneInput(regPhone);
+//                .inputToEmailField(email)
+//                .inputToPasswordField(password)
+//                .inputToPassConfirmField(password);
         if(userCredentialsDAO.getUserByEmail(email).size()>0) {
             userCredentialsDAO.deleteUserByEmail(email);
         }
         return this;
     }
 
-    RegPage setBlankValuesToRegForm() {
+    AuthPage setBlankValuesToRegForm() {
         inputToName("")
                 .inputToLastName("")
                 .inputToEmailField("")
@@ -112,63 +112,63 @@ public class RegPage extends AbstractPage {
         return this;
     }
 
-    RegPage markRegCheckbox() {
-        regForm.markCheckBoxWithOverlay(registrationTermsCheckBox);
+    AuthPage markRegCheckbox() {
+        regForm.markCheckBox(termsCheckBox);
         return this;
     }
 
-    RegPage unmarkRegCheckbox() {
-        regForm.uncheck(registrationTermsCheckBox);
+    AuthPage unmarkRegCheckbox() {
+        regForm.uncheck(termsCheckBox);
         return this;
     }
 
-    RegPage unmarkMarketingCheckbox() {
+    AuthPage unmarkMarketingCheckbox() {
         regForm.uncheck(marketingCheckbox);
         return this;
     }
 
-    RegPage submitInvalRegForm(){
-        regForm.submit(regButton);
+    AuthPage submitInvalRegForm(){
+        regForm.submit(authForwardButton);
         return this;
     }
 
-    public RegPage submitValidRegForm() {
-        regForm.submit(regButton);
+    public AuthPage submitValidRegForm() {
+        regForm.submit(authForwardButton);
         return this;
     }
 
-    public SmsVerificationPage submitRegFormWithVerifiedData() {
-//        if (!regButton.isEnabled()) {
-            findWithXPath("(//div[@class='auth__overlay'])[2]").click();
+    public AboutMePage submitRegFormWithVerifiedData() {
+//        if (!authForwardButton.isEnabled()) {
+//            findWithXPath("(//div[@class='auth__overlay'])[2]").click();
 //        }
         fillRegFormWithValidData()
                 .markRegCheckbox()
                 .submitValidRegForm()
                 .waitForAngularRequestsToFinish();
-        return new SmsVerificationPage(driver);
+        return new AboutMePage(driver);
     }
 
     public void waitForReaction() throws InterruptedException {
         Thread.sleep(1000);
-        explWait.until(or(elementToBeClickable(regButton),
+        explWait.until(or(elementToBeClickable(authForwardButton),
                 elementToBeClickable(By.xpath("//input[@name='smsVerificationCode']"))));
     }
 
-    public RegPage clickRegTerms() {
+    public AuthPage clickRegTerms() {
         linkRegTerms.click();
         return this;
     }
 
-    RegPage waitForClosingTerms() {
+    AuthPage waitForClosingTerms() {
         explWait.until(invisibilityOfElementLocated(By.xpath("//md-dialog")));
         return this;
     }
-    RegPage waitForOpeningTerms() {
+    AuthPage waitForOpeningTerms() {
         explWait.until(visibilityOfElementLocated(By.xpath("//md-dialog")));
         return this;
     }
 
-    public RegPage clickMarketingTerms() {
+    public AuthPage clickMarketingTerms() {
         linkMarketingTerms.click();
         return this;
     }

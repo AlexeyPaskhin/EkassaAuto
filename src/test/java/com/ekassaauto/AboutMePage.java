@@ -4,6 +4,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
+import java.sql.SQLException;
+
 import static com.ekassaauto.Registration.*;
 
 /**
@@ -13,8 +15,10 @@ public class AboutMePage extends AbstractPage {
     private Form aboutMeForm;
 
     @FindBy(xpath = "//ul[@ng-controller='BreadcrumbsCtrl']") WebElement breadcrumbs;
+    @FindBy(xpath = "//input[@name='pesel']") WebElement peselField;
     @FindBy(xpath = "//input[@name='social-number']") WebElement socialNumberField;
     @FindBy(xpath = "//input[@name='account']") WebElement bankAccountField;
+    @FindBy(xpath = "//input[@name='mail']") WebElement emailField;
     @FindBy(xpath = "//md-select[@placeholder='Stan cywilny']") WebElement maritalStatusListbox;
     @FindBy(xpath = "//md-select[@placeholder='Dzieci w wieku do 21 lat']") WebElement dependentsQuantityListbox;
     @FindBy(xpath = "//md-select[@placeholder='Wykształcenie']") WebElement educationListbox;
@@ -49,34 +53,40 @@ public class AboutMePage extends AbstractPage {
 
 
     PdlOfferPage submitAboutMePageWithAcceptableData() {
-        aboutMeForm.set(socialNumberField, socialNumber)
+        aboutMeForm.set(peselField, pesel)
+                .set(socialNumberField, socialNumber)
                 .set(bankAccountField, bankAccount)
-                .selectFromListBox(maritalStatusListbox, MaritalStatuses.Married.getValue())
-                .selectFromListBox(dependentsQuantityListbox, DependentsQuantities.None.getValue())
-                .selectFromListBox(educationListbox, Education.SecondaryEducation.getValue())
-                .selectFromListBox(occupationTypeListbox, OccupationTypes.ItSpecialist.getValue())
+                .set(emailField, email)
+                .selectFromListBoxByValue(maritalStatusListbox, MaritalStatuses.Married.getValue())
+                .selectFromListBoxByValue(dependentsQuantityListbox, DependentsQuantities.None.getValue())
+                .selectFromListBoxByValue(educationListbox, Education.SecondaryEducation.getValue())
+                .selectFromListBoxByValue(occupationTypeListbox, OccupationTypes.ItSpecialist.getValue())
                 .set(currentDebtField, "0")
-                .selectFromListBox(contactPersonListbox, ContactPersons.WifeOrHusband.getValue())
+                .selectFromListBoxByValue(contactPersonListbox, ContactPersons.WifeOrHusband.getValue())
                 .set(contactPersonPhoneField, contactPersonPhone)
-                .selectFromListBox(propertyOwnListbox, PropertyOwn.HomeOwner.getValue())
+                .selectFromListBoxByValue(propertyOwnListbox, PropertyOwn.HomeOwner.getValue())
                 .set(postalCodeField, postalCode)
-                .selectFromListBox(livRegionListbox, Regions.PodkarpackieWojewództwo.getValue())
+                .selectFromListBoxByValue(livRegionListbox, Regions.PodkarpackieWojewództwo.getValue())
                 .set(livCityField, testString)
                 .set(livStreetField, testString)
                 .set(livBuildingField, testString)
                 .set(livApartmentField, testString)
-                .selectFromListBox(empType1Listbox, EmploymentTypes.FullTimeEmployed.getValue())
-                .selectFromListBox(workExpirience1Listbox, TermsOfWorkExperience.From1To2Years.getValue())
+                .selectFromListBoxByValue(empType1Listbox, EmploymentTypes.FullTimeEmployed.getValue())
+                .selectFromListBoxByValue(workExpirience1Listbox, TermsOfWorkExperience.From1To2Years.getValue())
                 .set(netIncome1Field, "3500")
-                .set(empName1Field, testString); //дальше надо проскролить страницу до элемента. а из-за шапки
-//        скролим до вышестоящего элемента, чтоб нужны оказался не перекрыт ею
-        scrollToElement(livRegionListbox);
-        aboutMeForm.selectFromListBox(empRegion1Listbox, Regions.PodkarpackieWojewództwo.getValue())
+                .set(empName1Field, testString)
+                .selectFromListBoxByValue(empRegion1Listbox, Regions.PodkarpackieWojewództwo.getValue())
                 .set(empPhone11Field, empPhoneField)
                 .submit(submitButton);
         waitForAngularRequestsToFinish();
 
         return new PdlOfferPage(driver);
+    }
+
+    public void cleanInstWormCache() throws SQLException {
+        if (instWormCacheDAO.instWormCacheForPdlPresent(name, pesel, lastName, bankAccount)) {
+            instWormCacheDAO.deleteInstWormCache(name, pesel, lastName, bankAccount);
+        }
     }
 
     enum TermsOfWorkExperience {

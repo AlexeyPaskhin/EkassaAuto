@@ -1,6 +1,7 @@
 package com.ekassaauto;
 
 import com.ekassaauto.database.PersistenceManager;
+import com.ekassaauto.database.dao.InstWormCacheDAO;
 import com.ekassaauto.database.dao.SentSmsDAO;
 import com.ekassaauto.database.dao.UserCredentialsDAO;
 import com.ekassaauto.database.dao.PlainUsersDAO;
@@ -21,20 +22,23 @@ import static org.testng.Assert.*;
 @Test
 public class Registration {
     protected static WebDriver driver;
-    static String regPhone = "222222218", name = "Alex", surname = "Paskhin", pesel = "92102107697",
+    static String regPhone = "222222218", name = "Alex", lastName = "Paskhin", pesel = "92102107697",
             email = "a.paskhin@gmail.com", password = "111111a", socialNumber = "ATC339884",
             bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
-            testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", empPhoneField = "987654321";
+            testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", empPhoneField = "987654321", instantorTestNik = "fake60!";
     static WebDriver.Options options;
     static MainPage mainPage;
-    static RegPage regPage;
+    static AuthPage authPage;
     static AboutMePage aboutMePage;
     static PdlOfferPage pdlOfferPage;
-    //    static MyProfilePage myProfilePage;
+    static BankAccountVerificationPage bankAccountVerificationPage;
+    static CongratulationPage congratulationPage;
+//        static MyProfilePage myProfilePage;
     static SmsVerificationPage smsVerificationPage;
-    static UserCredentialsDAO userCredentialsDAO;
+    public static UserCredentialsDAO userCredentialsDAO;
     static SentSmsDAO sentSmsDAO;
     static PlainUsersDAO plainUsersDAO;
+    static InstWormCacheDAO instWormCacheDAO;
 
     @BeforeSuite
     public void createDBConnection() {
@@ -42,6 +46,7 @@ public class Registration {
         userCredentialsDAO = new UserCredentialsDAO(entityManager);
         plainUsersDAO = new PlainUsersDAO(entityManager);
         sentSmsDAO = new SentSmsDAO(entityManager);
+        instWormCacheDAO = new InstWormCacheDAO(entityManager);
     }
 
     @BeforeClass
@@ -71,8 +76,8 @@ public class Registration {
 
 //        mainPage.switchToConsolidationForm();
 
-//        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
-//        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+//        authPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
+//        smsVerificationPage = authPage.submitRegFormWithVerifiedData();
 //        aboutMePage = smsVerificationPage.submitSmsCodeFormWithRightCode();
 //        mainPage = new MainPage(driver).switchToConsolidationForm();
 //        mainPage.submitAnUnregisteredNumberThroughConsolidationForm()
@@ -104,8 +109,8 @@ public class Registration {
     @Test(priority = 14)
     public void registrationThroughConsForm() throws SQLException {
         aboutMePage = mainPage.submitAnUnregisteredNumberThroughConsolidationForm()
-                .submitRegFormWithVerifiedData()
-                .submitSmsCodeFormWithRightCode();
+                .submitRegFormWithVerifiedData();
+//                .submitSmsCodeFormWithRightCode();
         assertTrue(aboutMePage.breadcrumbs.isDisplayed(),
                 "Page 'About me' isn't displayed after submitting right sms code!");
         assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
@@ -253,8 +258,8 @@ public class Registration {
                 .logOut()
                 .submitAnUnregisteredNumberThroughPDLForm()
                 .unmarkMarketingCheckbox()
-                .submitRegFormWithVerifiedData()
-                .submitSmsCodeFormWithRightCode();
+                .submitRegFormWithVerifiedData();
+//                .submitSmsCodeFormWithRightCode();
         assertFalse(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
                 "The 'false' value isn't set to relevant field in the plainUsers table after registration a user with unmarked marketing checkbox!");
     }
@@ -339,224 +344,224 @@ public class Registration {
 
     @Test(priority = 5)
     public void visibilityOfSmsCodeField() {
-        smsVerificationPage = regPage.submitRegFormWithVerifiedData();
+        aboutMePage = authPage.submitRegFormWithVerifiedData();
         assertTrue(smsVerificationPage.smsCodeSubmitButton.isDisplayed(), "The block for sms code isn't displayed!");
     }
 
     @Test(priority = 4)
     public void registrationWithEarlierUsedEmail() {
-        regPage.fillRegFormWithValidData()
+        authPage.fillRegFormWithValidData()
                 .markRegCheckbox()
                 .inputToEmailField(plainUsersDAO.getRegisteredEmail())
                 .submitInvalRegForm()
                 .customWaitForPerformingJS();
-        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
-                regPage.passwordField, regPage.passConfirmField};
+        WebElement[] regInputs = {authPage.nameField, authPage.lastNameField, authPage.emailField,
+                authPage.passwordField, authPage.passConfirmField};
         try {
             for (WebElement el : regInputs) {
                 assertTrue(el.isDisplayed());
             }
         } catch (NoSuchElementException e) {
-            regPage = regPage.goToNewRegPage();
+            authPage = authPage.goToNewRegPage();
             throw new AssertionError("Registration form with already registered email was submitted");
         }
-        assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Użytkownik z tym e-mail jest już zarejestrowany')]").size(),
+        assertEquals(authPage.findElementsByXPath("//*[contains(text(), 'Użytkownik z tym e-mail jest już zarejestrowany')]").size(),
                 1, "Error message isn't displayed!");
     }
 
     @Test(priority = 4)
     public void submittingBlankRegForm() {
-        regPage.setBlankValuesToRegForm()
+        authPage.setBlankValuesToRegForm()
                 .submitInvalRegForm()
                 .customWaitForPerformingJS();
-        WebElement[] regInputs = {regPage.nameField, regPage.lastNameField, regPage.emailField,
-                regPage.passwordField, regPage.passConfirmField};
+        WebElement[] regInputs = {authPage.nameField, authPage.lastNameField, authPage.emailField,
+                authPage.passwordField, authPage.passConfirmField};
         try {
             for (WebElement el : regInputs)
-                assertTrue(regPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " doesn't have red color!");
+                assertTrue(authPage.fieldBorderIsRed(el), "Blank field " + el.toString() + " doesn't have red color!");
         } catch (NoSuchElementException e) {
-            regPage = regPage.goToNewRegPage();
+            authPage = authPage.goToNewRegPage();
             throw new AssertionError("Blank registration form was submitted");
         }
     }
 
     @Test(priority = 4)
     public void equalityValidationOfPasswordsWhileEditingMainPassField() throws InterruptedException {
-        regPage.fillRegFormWithValidData()
+        authPage.fillRegFormWithValidData()
                 .inputToPasswordField(password + "a")
-                .moveFromAField(regPage.passwordField);   //этот шаг необязательный, но селениум слишком быстро проверяет цвет и приходится что то еще сделать))
-        assertTrue(regPage.fieldBorderIsRed(regPage.passConfirmField));
-        regPage.submitInvalRegForm()
+                .moveFromAField(authPage.passwordField);   //этот шаг необязательный, но селениум слишком быстро проверяет цвет и приходится что то еще сделать))
+        assertTrue(authPage.fieldBorderIsRed(authPage.passConfirmField));
+        authPage.submitInvalRegForm()
                 .waitForReaction();
-        assertEquals(regPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(),
+        assertEquals(authPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(),
                 1, "Error message isn't displayed!");
     }
 
     @Test(priority = 4)
     public void accessibilityOfConcessionToEmailsText() {
-        regPage.clickMarketingTerms();
-        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").size(), 1, "Terms aren't opened!");
-        assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").isDisplayed(), "Terms aren't displayed!");
-        regPage.closeDialogWindow();
-        regPage.waitForClosingTerms();
+        authPage.clickMarketingTerms();
+        assertEquals(authPage.findElementsByXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").size(), 1, "Terms aren't opened!");
+        assertTrue(authPage.findWithXPath("//md-dialog[@aria-label='Wyrażam zgodę ...']").isDisplayed(), "Terms aren't displayed!");
+        authPage.closeDialogWindow();
+        authPage.waitForClosingTerms();
     }
 
     @Test(priority = 4)
     public void accessibilityOfARegTermsText() {
-        regPage.clickRegTerms()
+        authPage.clickRegTerms()
                 .waitForOpeningTerms();
-        assertEquals(regPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(),
+        assertEquals(authPage.findElementsByXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").size(),
                 1, "Terms aren't opened!");
-        assertTrue(regPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(),
+        assertTrue(authPage.findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']").isDisplayed(),
                 "Terms aren't displayed!");
-        regPage.closeDialogWindow();
-        regPage.waitForClosingTerms();
+        authPage.closeDialogWindow();
+        authPage.waitForClosingTerms();
     }
 
     @Test(priority = 4)
     public void submittingRegFormWithUnmarkedTermsCheckbox() throws InterruptedException {
-        regPage.fillRegFormWithValidData()
+        authPage.fillRegFormWithValidData()
                 .unmarkRegCheckbox()
                 .submitInvalRegForm()
                 .waitForReaction();
         try {
-            assertTrue(regPage.fieldIsInvalid(regPage.registrationTermsCheckBox), "Unmarked checkbox has valid state!");
-            assertTrue(regPage.elementIsRed(regPage.linkRegTerms),
+            assertTrue(authPage.fieldIsInvalid(authPage.termsCheckBox), "Unmarked checkbox has valid state!");
+            assertTrue(authPage.elementIsRed(authPage.linkRegTerms),
                     "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
-            regPage.goBack();
+            authPage.goBack();
             throw new AssertionError("Unfilled registration form is submitted", ex);
         }
     }
 
     @Test(priority = 4)
     public void validationOfPasswordConfirmationField() {
-        regPage.inputToPasswordField(password)
+        authPage.inputToPasswordField(password)
                 .inputToPassConfirmField(password + "a")
-                .moveFromAField(regPage.passConfirmField);
-        assertTrue(regPage.fieldIsInvalid(regPage.passConfirmField), "Password confirmation field is valid while its value isn't equal to password field!");
-        assertTrue(regPage.fieldBorderIsRed(regPage.passConfirmField), "Border of invalid field isn't highlighted with red color!");
-        regPage.inputToPassConfirmField(password)
-                .moveFromAField(regPage.passConfirmField);
-        assertFalse(regPage.fieldIsInvalid(regPage.passConfirmField), "Password confirmation field is invalid while its value is equal to password field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.passConfirmField), "Border of valid field is highlighted with red color!");
+                .moveFromAField(authPage.passConfirmField);
+        assertTrue(authPage.fieldIsInvalid(authPage.passConfirmField), "Password confirmation field is valid while its value isn't equal to password field!");
+        assertTrue(authPage.fieldBorderIsRed(authPage.passConfirmField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToPassConfirmField(password)
+                .moveFromAField(authPage.passConfirmField);
+        assertFalse(authPage.fieldIsInvalid(authPage.passConfirmField), "Password confirmation field is invalid while its value is equal to password field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.passConfirmField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void positiveValidationOfPasswordField() {
-        regPage.inputToPasswordField("1q\\%[`")
-                .moveFromAField(regPage.passwordField);
-        assertEquals(regPage.getValue(regPage.passwordField), "1q\\%[`", "Wrong data input to password field!");
-        assertFalse(regPage.fieldIsInvalid(regPage.passwordField), "Permissible characters aren't allowed at the password field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.passwordField), "Border of valid field is highlighted with red color!");
+        authPage.inputToPasswordField("1q\\%[`")
+                .moveFromAField(authPage.passwordField);
+        assertEquals(authPage.getValue(authPage.passwordField), "1q\\%[`", "Wrong data input to password field!");
+        assertFalse(authPage.fieldIsInvalid(authPage.passwordField), "Permissible characters aren't allowed at the password field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.passwordField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4, dataProvider = "passwordValidation", dataProviderClass = DataProviders.class)
     public void negativeValidationOfPasswordField(String password) {
-        regPage.inputToPasswordField(password)
-                .moveFromAField(regPage.passwordField);
-        assertEquals(regPage.getValue(regPage.passwordField), password, "Wrong data input to password field!");
-        assertTrue(regPage.fieldIsInvalid(regPage.passwordField), "Impermissible characters are allowed at the password field!");
-        assertTrue(regPage.fieldBorderIsRed(regPage.passwordField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToPasswordField(password)
+                .moveFromAField(authPage.passwordField);
+        assertEquals(authPage.getValue(authPage.passwordField), password, "Wrong data input to password field!");
+        assertTrue(authPage.fieldIsInvalid(authPage.passwordField), "Impermissible characters are allowed at the password field!");
+        assertTrue(authPage.fieldBorderIsRed(authPage.passwordField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     //при передаче на бэк срабатывает трим - обрезка пробелов, поэтому их ввод в начале конце допустим
     public void enteringEmailWithSpacesAtTheBeginning() {
-        regPage.inputToEmailField("   a.paskhin1@gmail.com")
-                .moveFromAField(regPage.emailField);
-        assertEquals(regPage.getValue(regPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
-        assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
+        authPage.inputToEmailField("   a.paskhin1@gmail.com")
+                .moveFromAField(authPage.emailField);
+        assertEquals(authPage.getValue(authPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
+        assertFalse(authPage.fieldIsInvalid(authPage.emailField), "Permissible characters aren't allowed at the email field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4)
     //при передаче на бэк срабатывает трим - обрезка пробелов, поэтому их ввод в начале конце допустим
     public void enteringEmailWithSpacesAtTheEnd() {
-        regPage.inputToEmailField("a.paskhin1@gmail.com  ")
-                .moveFromAField(regPage.emailField);
-        assertEquals(regPage.getValue(regPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
-        assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
+        authPage.inputToEmailField("a.paskhin1@gmail.com  ")
+                .moveFromAField(authPage.emailField);
+        assertEquals(authPage.getValue(authPage.emailField), "a.paskhin1@gmail.com", "Wrong data input to email field!");
+        assertFalse(authPage.fieldIsInvalid(authPage.emailField), "Permissible characters aren't allowed at the email field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4)
     //видимо селениум видоизменяет кириллицу после "@" в малопонятные символы, поэтому будем считать, что ожидаем вводимую букву увидеть такой, как написано в "expected"
     public void positiveValidationOfEmailField() {
-        regPage.inputToEmailField("a.paskhin-@gmail-ы.coms")
-                .moveFromAField(regPage.emailField);
-        assertEquals(regPage.getValue(regPage.emailField), "a.paskhin-@xn--gmail--ntf.coms", "Wrong data input to email field!");
-        assertFalse(regPage.fieldIsInvalid(regPage.emailField), "Permissible characters aren't allowed at the email field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.emailField), "Border of valid field is highlighted with red color!");
+        authPage.inputToEmailField("a.paskhin-@gmail-ы.coms")
+                .moveFromAField(authPage.emailField);
+        assertEquals(authPage.getValue(authPage.emailField), "a.paskhin-@xn--gmail--ntf.coms", "Wrong data input to email field!");
+        assertFalse(authPage.fieldIsInvalid(authPage.emailField), "Permissible characters aren't allowed at the email field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.emailField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4, dataProvider = "emailValidation", dataProviderClass = DataProviders.class)
     public void negativeValidationOfEmailField(String text) {
-        regPage.inputToEmailField(text)
-                .moveFromAField(regPage.emailField);
-        assertTrue(regPage.fieldIsInvalid(regPage.emailField), "Impermissible characters are allowed at the email field!");
-        assertTrue(regPage.fieldBorderIsRed(regPage.emailField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToEmailField(text)
+                .moveFromAField(authPage.emailField);
+        assertTrue(authPage.fieldIsInvalid(authPage.emailField), "Impermissible characters are allowed at the email field!");
+        assertTrue(authPage.fieldBorderIsRed(authPage.emailField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void positiveValidationWhileUsingHyphenInLastNameField() {
-        regPage.inputToLastName("a-a")
-                .moveFromAField(regPage.lastNameField);
-        assertFalse(regPage.fieldIsInvalid(regPage.lastNameField), "Hyphen isn't allowed in the surname field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of valid field is highlighted with red color!");
+        authPage.inputToLastName("a-a")
+                .moveFromAField(authPage.lastNameField);
+        assertFalse(authPage.fieldIsInvalid(authPage.lastNameField), "Hyphen isn't allowed in the lastName field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.lastNameField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
     public void negativeValidationWhileUsingHyphenInLastNameField(String text) {
-        regPage.inputToLastName(text)
-                .moveFromAField(regPage.lastNameField);
-        assertTrue(regPage.fieldIsInvalid(regPage.lastNameField), "Undisguised hyphen is allowed in the surname field!");
-        assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToLastName(text)
+                .moveFromAField(authPage.lastNameField);
+        assertTrue(authPage.fieldIsInvalid(authPage.lastNameField), "Undisguised hyphen is allowed in the lastName field!");
+        assertTrue(authPage.fieldBorderIsRed(authPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void enteringNonLatinAndSpecCharsToLastNameField() {
-        regPage.inputToLastName("іыцжч!@.\"є'=+&")
-                .moveFromAField(regPage.lastNameField);
-        assertEquals(regPage.getValue(regPage.lastNameField), "", "Something except latin letters is entered to the surname field!");
-        assertTrue(regPage.fieldIsInvalid(regPage.lastNameField));
-        assertTrue(regPage.fieldBorderIsRed(regPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToLastName("іыцжч!@.\"є'=+&")
+                .moveFromAField(authPage.lastNameField);
+        assertEquals(authPage.getValue(authPage.lastNameField), "", "Something except latin letters is entered to the lastName field!");
+        assertTrue(authPage.fieldIsInvalid(authPage.lastNameField));
+        assertTrue(authPage.fieldBorderIsRed(authPage.lastNameField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void positiveValidationWhileUsingHyphenInNameField() {
-        regPage.inputToName("An-Mar")
-                .moveFromAField(regPage.nameField);
-        assertFalse(regPage.fieldIsInvalid(regPage.nameField), "Hyphen isn't allowed in the name field!");
-        assertFalse(regPage.fieldBorderIsRed(regPage.nameField), "Border of valid field is highlighted with red color!");
+        authPage.inputToName("An-Mar")
+                .moveFromAField(authPage.nameField);
+        assertFalse(authPage.fieldIsInvalid(authPage.nameField), "Hyphen isn't allowed in the name field!");
+        assertFalse(authPage.fieldBorderIsRed(authPage.nameField), "Border of valid field is highlighted with red color!");
     }
 
     @Test(priority = 4, dataProvider = "UsingOfHyphen", dataProviderClass = DataProviders.class)
     public void negativeValidationWhileUsingHyphenInNameField(String text) {
-        regPage.inputToName(text)
-                .moveFromAField(regPage.nameField);
-        assertTrue(regPage.fieldIsInvalid(regPage.nameField), "Undisguised hyphen is allowed in the name field!");
-        assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToName(text)
+                .moveFromAField(authPage.nameField);
+        assertTrue(authPage.fieldIsInvalid(authPage.nameField), "Undisguised hyphen is allowed in the name field!");
+        assertTrue(authPage.fieldBorderIsRed(authPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void enteringNonLatinAndSpecCharsToNameField() {
-        regPage.inputToName("іыцжч!@.\"є'=+&")
-                .moveFromAField(regPage.nameField);
-        assertEquals(regPage.getValue(regPage.nameField), "", "Something except latin letters is entered to the name field!");
-        assertTrue(regPage.fieldIsInvalid(regPage.nameField));
-        assertTrue(regPage.fieldBorderIsRed(regPage.nameField), "Border of invalid field isn't highlighted with red color!");
+        authPage.inputToName("іыцжч!@.\"є'=+&")
+                .moveFromAField(authPage.nameField);
+        assertEquals(authPage.getValue(authPage.nameField), "", "Something except latin letters is entered to the name field!");
+        assertTrue(authPage.fieldIsInvalid(authPage.nameField));
+        assertTrue(authPage.fieldBorderIsRed(authPage.nameField), "Border of invalid field isn't highlighted with red color!");
     }
 
     @Test(priority = 4)
     public void concessionToEmailsCheckboxIsMarkedByDefault() {
-        assertTrue(regPage.checkboxIsMarked(regPage.marketingCheckbox),
+        assertTrue(authPage.checkboxIsMarked(authPage.marketingCheckbox),
                 "Marketing checkbox isn't marked by default!");
     }
 
     @Test(priority = 3)
     public void successfulSubmittingPdlForm() throws SQLException {
-        regPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
+        authPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
@@ -687,8 +692,8 @@ public class Registration {
 
     @Test(priority = 1)
     public void inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent() {
-        assertEquals(mainPage.submitPDLButton.getText(), "DALEJ");
-        assertEquals(mainPage.submitConsButton.getText(), "DALEJ");
+        assertEquals(mainPage.startPdlProcessButton.getText(), "DALEJ");
+        assertEquals(mainPage.startConsProcessButton.getText(), "DALEJ");
     }
 
 

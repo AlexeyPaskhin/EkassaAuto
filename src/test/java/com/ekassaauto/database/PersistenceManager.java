@@ -13,7 +13,7 @@ public class PersistenceManager {
     public PersistenceManager() {
         // "jpa-example" was the value of the name attribute of the
         // persistence-unit element.
-        emFactory = Persistence.createEntityManagerFactory("jpa-example");
+        emFactory = Persistence.createEntityManagerFactory("jpa-aui");
     }
 
     public EntityManager getEntityManager() {

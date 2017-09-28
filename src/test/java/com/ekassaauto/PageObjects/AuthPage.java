@@ -1,4 +1,4 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import com.ekassaauto.database.entities.UserCredential;
 import org.openqa.selenium.By;
@@ -17,19 +17,28 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
  * Created by user on 13.04.2017.
  */
 public class AuthPage extends AbstractPage {
-    private Form regForm;
+    private Form authForm;
 
-    @FindBy(xpath = "//input[@name='name']") WebElement nameField;
-    @FindBy(xpath = "//input[@name='lastName']") WebElement lastNameField;
+    @FindBy(xpath = "//input[@name='name']")
+    public WebElement nameField;
+    @FindBy(xpath = "//input[@name='lastName']")
+    public WebElement lastNameField;
     @FindBy(xpath = "//input[@name='pesel']") WebElement peselField;
-    @FindBy(xpath = "//input[@name='phone']") WebElement registrationPhoneField;
-    @FindBy (xpath = "//input[@name='email']") WebElement emailField;
-    @FindBy(xpath = "(//input[@name='password'])[2]") WebElement passwordField;
-    @FindBy(xpath = "//input[@name='passwordConfirm']") WebElement passConfirmField;
-    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") WebElement termsCheckBox;
+    @FindBy(xpath = "//input[@name='phone']")
+    public WebElement phoneField;
+    @FindBy (xpath = "//input[@name='email']")
+    public WebElement emailField;
+    @FindBy(xpath = "(//input[@name='password'])[2]")
+    public WebElement passwordField;
+    @FindBy(xpath = "//input[@name='passwordConfirm']")
+    public WebElement passConfirmField;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']")
+    public WebElement termsCheckBox;
     @FindBy(xpath = "//button[@type='submit']") WebElement authForwardButton;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") WebElement linkRegTerms;
-    @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']") WebElement marketingCheckbox;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
+    public WebElement linkRegTerms;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']")
+    public WebElement marketingCheckbox;
     @FindBy(xpath = "//span[@ng-click='showMarketingAgreements($event)']") WebElement linkMarketingTerms;
 
     public AuthPage(WebDriver driver) {
@@ -38,19 +47,31 @@ public class AuthPage extends AbstractPage {
     }
 
     private void initPageElements() {
-        regForm = new Form(findWithXPath("//form"));
+        authForm = new Form(findWithXPath("//form"));
     }
 
-    AuthPage inputToName(String text) {
-        regForm.setToFieldWithOverlay(nameField, text);
+
+    public String getValueFromPDLPhoneInput() {
+        return authForm.getFieldValue(phoneField);
+    }
+
+    public AuthPage inputToName(String text) {
+        authForm.set(nameField, text);
         return this;
     }
-    AuthPage inputToLastName(String text) {
-        regForm.setToFieldWithOverlay(lastNameField, text);
+    public AuthPage inputToLastName(String text) {
+        authForm.set(lastNameField, text);
         return this;
     }
+
+    public AuthPage inputToPhoneField(String data) {
+        authForm.set(phoneField, data);
+//        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, data);
+        return this;
+    }
+
     AuthPage inputToPesel(String text) {
-        regForm.setToFieldWithOverlay(peselField, text);
+        authForm.setToFieldWithOverlay(peselField, text);
         return this;
     }
     AuthPage enterUnregisteredPhoneToPhoneInput(String text) {
@@ -66,30 +87,26 @@ public class AuthPage extends AbstractPage {
         }
         //todo удалять процессы так же с камунды с данным номером
 
-        regForm.set(registrationPhoneField, text);
+        authForm.set(phoneField, text);
         return this;
     }
 
-    String getValue(WebElement field) {
-        return regForm.getFieldValue(field);
-    }
-
     public AuthPage inputToEmailField(String text) {
-        regForm.setToFieldWithOverlay(emailField, text);
+        authForm.setToFieldWithOverlay(emailField, text);
         return this;
     }
 
     public AuthPage inputToPasswordField(String text) {
-        regForm.setToFieldWithOverlay(passwordField, text);
+        authForm.setToFieldWithOverlay(passwordField, text);
         return this;
     }
 
     public AuthPage inputToPassConfirmField(String pass) {
-        regForm.setToFieldWithOverlay(passConfirmField, pass);
+        authForm.setToFieldWithOverlay(passConfirmField, pass);
         return this;
     }
 
-    AuthPage fillRegFormWithValidData() {
+    public AuthPage fillAuthFormForRegistrationWithValidData() {
         inputToName(name)
                 .inputToLastName(lastName)
 //                .inputToPesel(pesel)
@@ -103,46 +120,47 @@ public class AuthPage extends AbstractPage {
         return this;
     }
 
-    AuthPage setBlankValuesToRegForm() {
+    public AuthPage setBlankValuesToAuthForm() {
         inputToName("")
                 .inputToLastName("")
-                .inputToEmailField("")
-                .inputToPasswordField("")
-                .inputToPassConfirmField("");
+                .inputToPhoneField("");
+//                .inputToEmailField("")
+//                .inputToPasswordField("")
+//                .inputToPassConfirmField("");
         return this;
     }
 
-    AuthPage markRegCheckbox() {
-        regForm.markCheckBox(termsCheckBox);
+    public AuthPage markAuthCheckbox() {
+        authForm.markCheckBox(termsCheckBox);
         return this;
     }
 
-    AuthPage unmarkRegCheckbox() {
-        regForm.uncheck(termsCheckBox);
+    public AuthPage unmarkAuthCheckbox() {
+        authForm.uncheck(termsCheckBox);
         return this;
     }
 
-    AuthPage unmarkMarketingCheckbox() {
-        regForm.uncheck(marketingCheckbox);
+    public AuthPage unmarkMarketingCheckbox() {
+        authForm.uncheck(marketingCheckbox);
         return this;
     }
 
-    AuthPage submitInvalRegForm(){
-        regForm.submit(authForwardButton);
+    public AuthPage submitInvalRegForm(){
+        authForm.submit(authForwardButton);
         return this;
     }
 
-    public AuthPage submitValidRegForm() {
-        regForm.submit(authForwardButton);
-        return this;
+    public AboutMePage submitValidRegForm() {
+        authForm.submit(authForwardButton);
+        return new AboutMePage(driver);
     }
 
-    public AboutMePage submitRegFormWithVerifiedData() {
+    public AboutMePage submitAuthFormForRegistrationWithVerifiedData() {
 //        if (!authForwardButton.isEnabled()) {
 //            findWithXPath("(//div[@class='auth__overlay'])[2]").click();
 //        }
-        fillRegFormWithValidData()
-                .markRegCheckbox()
+        fillAuthFormForRegistrationWithValidData()
+                .markAuthCheckbox()
                 .submitValidRegForm()
                 .waitForAngularRequestsToFinish();
         return new AboutMePage(driver);
@@ -159,12 +177,12 @@ public class AuthPage extends AbstractPage {
         return this;
     }
 
-    AuthPage waitForClosingTerms() {
-        explWait.until(invisibilityOfElementLocated(By.xpath("//md-dialog")));
+    public AuthPage waitForClosingTerms() {
+        explWait.until(invisibilityOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
-    AuthPage waitForOpeningTerms() {
-        explWait.until(visibilityOfElementLocated(By.xpath("//md-dialog")));
+    public AuthPage waitForOpeningTerms() {
+        explWait.until(visibilityOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 

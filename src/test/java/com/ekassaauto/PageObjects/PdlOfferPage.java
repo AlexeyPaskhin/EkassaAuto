@@ -1,10 +1,8 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-
-import java.sql.SQLException;
 
 import static com.ekassaauto.Registration.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
@@ -32,30 +30,30 @@ public class PdlOfferPage extends AbstractPage {
     }
 
 
-    CongratulationPage passingPdlOfferPageWithDefaultProposalWithSuccessfulBankCache() {
-        pdlOfferPage.selectDefaultProposal()
+    public CongratulationPage passingPdlOfferPageWithDefaultProposalWithSuccessfulBankCache(String phone) {
+        selectDefaultProposal()
                 .agreeWithTheTerms()
-                .enterSmsCode()
+                .enterSmsCode(phone)
                 .submitPdlOfferForm()
                 .waitForAngularRequestsToFinish();
-//        if (instWormCacheDAO.instWormCacheForPdlPresent(regPhone) && instWormCacheDAO.instWormCacheIsSuccessful(regPhone))  -  это должно быть тестовой логикой
+//        if (instWormCacheDAO.instWormCacheForPdlPresent(phone) && instWormCacheDAO.instWormCacheIsSuccessful(phone))  -  это должно быть тестовой логикой
             return new CongratulationPage(driver);
     }
 
-    RejectPage passingPdlOfferPageWithDefaultProposalWithFailedBankCache() {
-        pdlOfferPage.selectDefaultProposal()
+    RejectPage passingPdlOfferPageWithDefaultProposalWithFailedBankCache(String phone) {
+        selectDefaultProposal()
                 .agreeWithTheTerms()
-                .enterSmsCode()
+                .enterSmsCode(phone)
                 .submitPdlOfferForm()
                 .waitForAngularRequestsToFinish();
-//        if (instWormCacheDAO.instWormCacheForPdlPresent(regPhone) && !instWormCacheDAO.instWormCacheIsSuccessful(regPhone))  -  это должно быть тестовой логикой
+//        if (instWormCacheDAO.instWormCacheForPdlPresent(phone) && !instWormCacheDAO.instWormCacheIsSuccessful(phone))  -  это должно быть тестовой логикой
             return new RejectPage(driver);
         }
 
-    BankAccountVerificationPage passingPdlOfferPageWithDefaultProposalWithoutBankCache() {
-        pdlOfferPage.selectDefaultProposal()
+    public BankAccountVerificationPage passingPdlOfferPageWithDefaultProposalWithoutBankCache(String phone) {
+        selectDefaultProposal()
                 .agreeWithTheTerms()
-                .enterSmsCode()
+                .enterSmsCode(phone)
                 .submitPdlOfferForm()
                 .waitForAngularRequestsToFinish();
         return new BankAccountVerificationPage(driver);
@@ -66,9 +64,9 @@ public class PdlOfferPage extends AbstractPage {
         return this;
     }
 
-    PdlOfferPage enterSmsCode() {
+    PdlOfferPage enterSmsCode(String phone) {
         explWait.until(visibilityOf(pdlOfferSmsCodeInput));
-        pdlOfferForm.set(pdlOfferSmsCodeInput, sentSmsDAO.getSmsCodeByPhone(regPhone));
+        pdlOfferForm.set(pdlOfferSmsCodeInput, sentSmsDAO.getSmsCodeByPhone(phone));
         return this;
     }
 

@@ -1,4 +1,4 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.CacheLookup;
@@ -14,27 +14,40 @@ public class MainPage extends AbstractPage {
     private Form pdlMainForm;
     private Form consolidationMainForm;
 
-    @FindBy(xpath = "//input[@name='phone']") protected WebElement pdlPhoneInput;
-    @FindBy(xpath = "(//input[@name='phone'])[2]") protected WebElement consolidationPhoneInput;
-    @FindBy(xpath = "//button[@type='submit']") WebElement startPdlProcessButton;
-    @FindBy(xpath = "(//button[@type='submit'])[2]") WebElement startConsProcessButton;
-    @FindBy(xpath = "//*[@ng-click='goToNextTask(false)']") WebElement goToNextTaskPdlButton;
-    @FindBy(xpath = "//*[@ng-click='goToNextTask(true)']") WebElement goToNextTaskConsolidationButton;
-    @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']") protected WebElement mdDialogOfAccessToPersData;
+    @FindBy(xpath = "(//input[@name='phone'])[2]")
+    public WebElement consolidationPhoneInput;
+    @FindBy(xpath = "//button[@type='submit']")
+    public WebElement startPdlProcessButton;
+    @FindBy(xpath = "(//button[@type='submit'])[2]")
+    public WebElement startConsProcessButton;
+    @FindBy(xpath = "//*[@ng-click='goToNextTask(false)']")
+    public WebElement goToNextTaskPdlButton;
+    @FindBy(xpath = "//*[@ng-click='goToNextTask(true)']")
+    public WebElement goToNextTaskConsolidationButton;
+    @FindBy(xpath = "//md-dialog[@aria-label='Potwierdzam, że ...']")
+    public WebElement mdDialogOfAccessToPersData;
     @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']") protected WebElement mdDialogOfLoanInfo;
+    @FindBy(xpath = "//md-dialog[@aria-label='Chwilówka w ...']")
+    public WebElement mdDialogOfLoanInfo;
     @CacheLookup
-    @FindBy(xpath = "//md-dialog[@aria-label='Kredyt konsolidacyjny ...']") protected WebElement mdDialogOfConsolidationInfo;
+    @FindBy(xpath = "//md-dialog[@aria-label='Pożyczka konsolidacyjna ...']")
+    public WebElement mdDialogOfConsolidationInfo;
     @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlMainScreenCheckbox;
     @FindBy(xpath = "(//md-checkbox[@ng-model='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']") protected WebElement termsLinkInPDL;
-    @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]") protected WebElement termsLinkInConsolidation;
+    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
+    public WebElement termsLinkInPDL;
+    @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]")
+    public WebElement termsLinkInConsolidation;
     @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']") private WebElement linkLoanInfo;
     @FindBy(xpath = "//div[@ng-click='showConsolidationInfo($event)']") private WebElement linkConsolidationInfo;
-    @FindBy(xpath = "//div[text()='Kredyt konsolidacyjny']") WebElement consolidationOverlay;
+    @FindBy(xpath = "//span[text()='Pożyczka konsolidacyjna']") WebElement consolidationOverlay;
+    @FindBy(xpath = "//input[@ng-model='loan.amount']") public WebElement pdlAmountInput;
+    @FindBy(xpath = "//input[@ng-model='loan.term']") public WebElement pdlTermInput;
+    @FindBy(xpath = "//input[@ng-model='consolidation.totalPaymentRequested']") public WebElement consolidationTrancheInput;
+    @FindBy(xpath = "//input[@ng-model='consolidation.amount']") public WebElement consolidationPaymentInput;
 
 
-    MainPage(WebDriver driver) {
+    public MainPage(WebDriver driver) {
         super(driver);
         driver.get("http://test.ekassa.com");
         waitForOpennessOfPDLCalc();
@@ -49,26 +62,33 @@ public class MainPage extends AbstractPage {
         consolidationMainForm = new Form(findWithXPath("(//form)[2]"));
     }
 
-    MainPage submitInvalidPDLForm() {
+    public MainPage submitInvalidPDLForm() {
         pdlMainForm.submit(startPdlProcessButton);
         return this;
     }
 
-    MainPage submitInvalidConsolidationForm() {
+    public MainPage submitInvalidConsolidationForm() {
         pdlMainForm.submit(startConsProcessButton);
+        waitForAngularRequestsToFinish();
         return this;
     }
 
-    AuthPage submitPdlFormInUnauthorizedState() {
-        //todo Add checking on presence of log in
+    public AuthPage passPdlFormInUnauthorizedState() {
         pdlMainForm.markCheckBoxWithOverlay(pdlMainScreenCheckbox)
                 .submit(startPdlProcessButton);
         waitForAngularRequestsToFinish();
         return new AuthPage(driver);
     }
 
+    public AuthPage passConsolidationFormInUnauthorizedState() {
+        pdlMainForm.markCheckBoxWithOverlay(consolidationRegCheckbox)
+                .submit(startConsProcessButton);
+        waitForAngularRequestsToFinish();
+        return new AuthPage(driver);
+    }
+
     @Deprecated
-    AuthPage submitAnUnregisteredNumberThroughPDLForm() {
+    public AuthPage submitAnUnregisteredNumberThroughPDLForm() {
 //        try {
 //            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
 //            if (requestedUserCredentials.size() == 1) {
@@ -80,9 +100,9 @@ public class MainPage extends AbstractPage {
 //            e.printStackTrace();
 //        }
         //todo удалять процессы так же с камунды с данным номером
-        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
-                .markCheckBox(pdlMainScreenCheckbox)
-                .submit(startPdlProcessButton);
+//        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, regPhone)
+//                .markCheckBox(pdlMainScreenCheckbox)
+//                .submit(startPdlProcessButton);
 
         customWaitForPerformingJS();
 
@@ -92,7 +112,7 @@ public class MainPage extends AbstractPage {
     }
 
     @Deprecated
-    AuthPage submitAnUnregisteredNumberThroughConsolidationForm() {
+    public AuthPage submitAnUnregisteredNumberThroughConsolidationForm() {
 //        try {
 //            List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
 //            if (requestedUserCredentials.size() == 1) {
@@ -118,81 +138,68 @@ public class MainPage extends AbstractPage {
         return new PasswordPage(driver);
     }
 
-    MainPage markPDLCheckbox() {
-        pdlMainForm.markCheckBox(pdlMainScreenCheckbox);
-        return this;
-    }
-    MainPage markConsolidationCheckbox() {
+    public MainPage markConsolidationCheckbox() {
         consolidationMainForm.markCheckBox(consolidationRegCheckbox);
         return this;
     }
 
-    MainPage uncheckPDLCheckbox() {
+    public MainPage unMarkPDLCheckbox() {
         pdlMainForm.uncheck(pdlMainScreenCheckbox);
         return this;
     }
 
-    MainPage uncheckConsolidationCheckbox() {
+    public MainPage markPDLCheckbox() {
+        pdlMainForm.markCheckBoxWithOverlay(pdlMainScreenCheckbox);
+        return this;
+    }
+
+    public MainPage uncheckConsolidationCheckbox() {
         consolidationMainForm.uncheck(consolidationRegCheckbox);
         return this;
     }
 
-    MainPage inputToPDLPhone(String data) {
-//        pdlPhoneInput.sendKeys(data);
-        pdlMainForm.setToFieldWithOverlay(pdlPhoneInput, data);
-        return this;
-    }
-
-    MainPage inputToConsolidationPhone(String data) {
+    public MainPage inputToConsolidationPhone(String data) {
         pdlMainForm.setToFieldWithOverlay(consolidationPhoneInput, data);
         return this;
     }
 
-    String getValueFromPDLPhoneInput() {
-        return pdlMainForm.getFieldValue(pdlPhoneInput);
-    }
-
-    String getValueFromConsolidationPhoneInput() {
+    public String getValueFromConsolidationPhoneInput() {
         return consolidationMainForm.getValueFromFieldAtFormWIthOverlay(consolidationPhoneInput);
     }
 
-    boolean inputIsInvalid(WebElement input) {
-        return input.getAttribute("class").contains("invalid");
-    }
-
-    boolean fieldWithPDLCheckboxIsInvalid() {
+    public boolean fieldWithPDLCheckboxIsInvalid() {
         return pdlMainForm.getElementClass(termsLinkInPDL).contains("error");
     }
 
-    boolean fieldWithConsolidationCheckboxIsInvalid() {
+    public boolean fieldWithConsolidationCheckboxIsInvalid() {
         return consolidationMainForm.getElementClass(termsLinkInConsolidation).contains("error");
     }
 
-    MainPage clickTheTermsInPDLForm() {
+    public MainPage clickTheTermsInPDLForm() {
         termsLinkInPDL.sendKeys(Keys.RETURN);     //здесь замена .click-у, потому что клик не работает всегда адекватно
         //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
-    MainPage clickTheTermsInConsolidationForm() {
+    public MainPage clickTheTermsInConsolidationForm() {
         termsLinkInConsolidation.sendKeys(Keys.RETURN);     //здесь замена .click-у, потому что клик не работает всегда адекватно
         //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 
-    MainPage clickLoanInfo() {
+    public MainPage clickLoanInfo() {
         linkLoanInfo.sendKeys(Keys.RETURN);
         explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Chwilówka w ...']")));
         return this;
     }
-    MainPage clickConsolidationInfo() {
+    public MainPage clickConsolidationInfo() {
         linkConsolidationInfo.sendKeys(Keys.RETURN);
-        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Kredyt konsolidacyjny ...']")));
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Pożyczka konsolidacyjna ...']")));
         return this;
     }
 
-    MainPage switchToConsolidationForm() {
+    public MainPage switchToConsolidationForm() {
         if (consolidationOverlay.isDisplayed()){
             consolidationOverlay.click();
         }
@@ -206,16 +213,16 @@ public class MainPage extends AbstractPage {
                 elementToBeClickable(By.xpath("//input[@name='name']"))));
     }
 
-    MainPage waitForClosingTerms() {
+    public MainPage waitForClosingTerms() {
         explWait.until(invisibilityOf(findWithXPath("//md-dialog[@aria-label='Potwierdzam, że ...']")));
         return this;
     }
 
-    MainPage waitForClosingLoanInfo() {
+    public MainPage waitForClosingLoanInfo() {
         explWait.until(invisibilityOf(mdDialogOfLoanInfo));
         return this;
     }
-    MainPage waitForClosingConsolidationInfo() {
+    public MainPage waitForClosingConsolidationInfo() {
         explWait.until(invisibilityOf(mdDialogOfConsolidationInfo));
         return this;
     }
@@ -223,19 +230,21 @@ public class MainPage extends AbstractPage {
     MainPage waitForOpennessOfPDLCalc() {
 //        explWait.until(invisibilityOf((findWithXPath("//*[text()='Chwilówki']"))));
         explWait.until(elementToBeClickable(startPdlProcessButton));
+        explWait.until(not(elementToBeClickable(By.xpath("//div[@class='first-task__calc-overlay']"))));
         return this;
     }
 
     MainPage waitForOpennessOfConsolidationCalc() {
-        explWait.until(invisibilityOf((findWithXPath("//*[text()='Kredyt konsolidacyjny']"))));
+        explWait.until(not(elementToBeClickable(By.xpath("(//div[@class='first-task__calc-overlay'])[2]"))));
+//        explWait.until(invisibilityOf((findWithXPath("//*[text()='Kredyt konsolidacyjny']"))));
         explWait.until(elementToBeClickable(termsLinkInConsolidation));
         return this;
     }
 
-    MainPage waitPhonePdlInputIsAccessible() {
-        explWait.until(elementToBeClickable(pdlPhoneInput));
-        return this;
-    }
+//    MainPage waitPhonePdlInputIsAccessible() {
+//        explWait.until(elementToBeClickable(pdlPhoneInput));
+//        return this;
+//    }
 
 
 }

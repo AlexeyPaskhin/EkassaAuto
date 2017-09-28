@@ -1,4 +1,4 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import org.testng.annotations.DataProvider;
 

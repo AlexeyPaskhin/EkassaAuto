@@ -1,5 +1,6 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
+import com.ekassaauto.PageObjects.AbstractPage;
 import org.openqa.selenium.WebDriver;
 
 /**

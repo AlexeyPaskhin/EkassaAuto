@@ -1,18 +1,13 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.FindBys;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,7 +36,7 @@ public class BankAccountVerificationPage extends AbstractPage {
         super(driver);
     }
 
-    CongratulationPage successfulPassingInstantorVerification() {
+    public CongratulationPage successfulPassingInstantorVerification() {
         if (wormyListBox.isDisplayed()) {  //если есть вурми проходим сквозь него к инстантору
             selectFromListBoxByText(wormyListBox, OptionsInWormyListBox.Inne.getValue());
         }

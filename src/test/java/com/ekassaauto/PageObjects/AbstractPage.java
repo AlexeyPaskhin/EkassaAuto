@@ -1,4 +1,4 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import com.paulhammant.ngwebdriver.NgWebDriver;
 import org.openqa.selenium.*;
@@ -6,7 +6,6 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import static com.ekassaauto.Registration.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 import java.util.List;
@@ -21,7 +20,8 @@ public abstract class AbstractPage {
     WebDriverWait explWait;
     JavascriptExecutor jseDriver;
 
-    @FindBy(xpath = "//a[contains(text(), 'MOJE PROFIL')]") WebElement myProfileLink;
+    @FindBy(xpath = "//ul[@ng-controller='BreadcrumbsCtrl']") public WebElement breadcrumbs;
+    @FindBy(xpath = "//a[contains(text(), 'MÓJ PROFIL')]") WebElement myProfileLink;
 //    @FindBy(xpath = "//div[@class='preloader ng-scope']") WebElement loader;
     public AbstractPage (WebDriver driver) {
         this.driver = driver;
@@ -32,6 +32,19 @@ public abstract class AbstractPage {
         PageFactory.initElements(driver, this);
     }
 
+    //works incorrect
+    AbstractPage setToFieldWithJS(WebElement field, String value) {
+        jseDriver.executeScript("arguments[1].value = arguments[0]; ", value, field);
+        return this;
+    }
+
+    public String getValue(WebElement field) {
+        return field.getAttribute("value");
+    }
+
+    public boolean inputIsInvalid(WebElement input) {
+        return input.getAttribute("aria-invalid").equals("true");
+    }
 
     public AbstractPage selectFromListBoxByText(WebElement listBox, String textInOption) {
         listBox.click();
@@ -48,23 +61,22 @@ public abstract class AbstractPage {
         return this;
     }
 
-    MyProfilePage goToMyProfile() {
+    public MyProfilePage goToMyProfile() {
         myProfileLink.click();
         return new MyProfilePage(driver);
     }
 
-    public AuthPage goToNewRegPage() {
-        mainPage = new MainPage(driver);
-        authPage = mainPage.submitPdlFormInUnauthorizedState();
-        return new AuthPage(driver);
+    public AuthPage goToNewAuthPage() {
+        logOut();
+        return new MainPage(driver).passPdlFormInUnauthorizedState();
     }
 
-    WebElement findWithXPath(String text) {
+    public WebElement findWithXPath(String text) {
         WebElement el = driver.findElement(By.xpath(text));
         return el;
     }
 
-    List<WebElement> findElementsByXPath(String locator) {
+    public List<WebElement> findElementsByXPath(String locator) {
         return driver.findElements(By.xpath(locator));
     }
 
@@ -74,7 +86,7 @@ public abstract class AbstractPage {
     }
 
     public boolean fieldIsInvalid(WebElement field){
-        return field.getAttribute("class").contains("invalid");
+        return field.getAttribute("aria-invalid").equals("true");
     }
 
     public AbstractPage moveFromAField(WebElement field) {
@@ -83,13 +95,15 @@ public abstract class AbstractPage {
         return this;
     }
 
-    AbstractPage closeDialogWindow() {
+    public AbstractPage closeDialogWindow() {
         findWithXPath("//body").sendKeys(Keys.ESCAPE);
         return this;
     }
 
     public boolean fieldBorderIsRed(WebElement field) {
-        return field.getCssValue("border-color").equals("rgb(221, 44, 0)");
+        System.out.println(field.getCssValue("border-color"));
+        return field.getCssValue("border-color").contains("255, 0, 0")
+                || field.getCssValue("border-color").contains("221, 44, 0");
     }
 
     public boolean elementIsRed(WebElement element) {
@@ -97,7 +111,7 @@ public abstract class AbstractPage {
         return element.getCssValue("color").contains("255, 0, 0");
     }
 
-    void goBack() {
+    public void goBack() {
         driver.navigate().back();
     }
 
@@ -119,8 +133,41 @@ public abstract class AbstractPage {
         explWait.until(numberOfElementsToBe(By.xpath("//div[@class='preloader ng-scope']"), 0));
     }
 
-    AbstractPage waitForAngularRequestsToFinish() {
+    public AbstractPage waitForAngularRequestsToFinish() {
         ngWebDriver.waitForAngularRequestsToFinish();
         return this;
+    }
+
+    public PdlOfferPage goToCpaProcessWithAutoLogin(Long id) {
+
+        driver.get("http://test.ekassa.com/#/?cpa_id=" + id);
+        driver.navigate().refresh();
+        waitForAngularRequestsToFinish();
+        return new PdlOfferPage(driver);
+    }
+
+    public AbstractPage submitFormWithEnterKeyThroughSpecificField(WebElement field) {
+        field.click();
+        field.sendKeys(Keys.ENTER);
+        waitForAngularRequestsToFinish();
+        return this;
+    }
+
+    public AbstractPage exitFromAFrame() {
+        driver.switchTo().defaultContent();
+        return this;
+    }
+
+    public MainPage logOut() {
+        if (myProfileLink.isDisplayed()) {
+            return goToMyProfile()
+                    .clickOnLogOutButton();
+        }
+        else return new MainPage(driver);
+    }
+
+    public AboutMePage startNewPdlProcess() {
+        return goToMyProfile()
+                .clickNewPdlButton();
     }
 }

@@ -1,4 +1,4 @@
-package com.ekassaauto;
+package com.ekassaauto.PageObjects;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -11,8 +11,10 @@ import static com.ekassaauto.Registration.*;
  */
 public class SmsVerificationPage extends AbstractPage {
     private Form smsCodeForm;
-    @FindBy(xpath = "//*[contains(text(), 'Proszę sprawdzić SMS')]") WebElement smsCodeSubmitButton;
-    @FindBy(xpath = "//input[@name='smsVerificationCode']") WebElement smsCodeInput;
+    @FindBy(xpath = "//*[contains(text(), 'Proszę sprawdzić SMS')]")
+    public WebElement smsCodeSubmitButton;
+    @FindBy(xpath = "//input[@name='smsVerificationCode']")
+    public WebElement smsCodeInput;
     @FindBy(xpath = "//i[@class='fa fa-refresh']") WebElement refreshCodeButton;
 
     public SmsVerificationPage(WebDriver driver) {
@@ -24,32 +26,31 @@ public class SmsVerificationPage extends AbstractPage {
         smsCodeForm = new Form(findWithXPath("//form[@name='verificationSms']"));
     }
 
-    SmsVerificationPage inputToCodeField(String code) {
+    public SmsVerificationPage inputToCodeField(String code) {
         smsCodeForm.set(smsCodeInput, code);
         return this;
     }
 
-    SmsVerificationPage submitInvalSmsCodeForm(){
+    public SmsVerificationPage submitInvalSmsCodeForm(){
         smsCodeForm.submit(smsCodeSubmitButton);
         return this;
     }
 
-    AboutMePage submitSmsCodeFormWithRightCode() {
+    public AboutMePage submitSmsCodeFormWithRightCode() {
         inputToCodeField(sentSmsDAO.getSmsCodeByPhone(regPhone));
         smsCodeForm.submit(smsCodeSubmitButton);
         waitForAngularRequestsToFinish();
         return new AboutMePage(driver);
     }
 
-    SmsVerificationPage refreshSmsCode() {
+    public SmsVerificationPage refreshSmsCode() {
         refreshCodeButton.click();
         return this;
     }
     
-    SmsVerificationPage goToNewSmsCodePage() {
-        mainPage = new MainPage(driver);
-        authPage = mainPage.submitAnUnregisteredNumberThroughPDLForm();
-//        smsVerificationPage = authPage.submitRegFormWithVerifiedData();
+    public SmsVerificationPage goToNewSmsCodePage() {
+        new MainPage(driver).submitAnUnregisteredNumberThroughPDLForm();
+//        smsVerificationPage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         return this;
     }
 

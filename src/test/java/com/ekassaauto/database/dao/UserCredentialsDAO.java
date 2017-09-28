@@ -37,9 +37,9 @@ public class UserCredentialsDAO {
         TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone = :regPhone",
                 UserCredential.class);
         query.setParameter("regPhone", regPhone);
-        UserCredential userCredential = query.getSingleResult();
+        List<UserCredential> userCredentialList = query.getResultList();
+        userCredentialList.forEach(userCredential -> entityManager.remove(userCredential));
 //        System.out.println(userCredential);
-        entityManager.remove(userCredential);
         entityManager.getTransaction().commit();
 //        entityManager.flush();
     }

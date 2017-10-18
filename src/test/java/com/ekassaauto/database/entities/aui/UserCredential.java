@@ -1,4 +1,4 @@
-package com.ekassaauto.database.entities;
+package com.ekassaauto.database.entities.aui;
 
 import javax.persistence.*;
 
@@ -14,7 +14,7 @@ public class UserCredential {
     private String password;
     private String phone;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "plain_user_id",nullable = false)
     private PlainUserEntity plainUserEntity;
 

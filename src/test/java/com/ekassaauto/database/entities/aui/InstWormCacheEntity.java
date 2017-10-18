@@ -1,4 +1,4 @@
-package com.ekassaauto.database.entities;
+package com.ekassaauto.database.entities.aui;
 
 import org.joda.time.DateTime;
 

@@ -1,7 +1,6 @@
-package com.ekassaauto.database.dao;
+package com.ekassaauto.database.dao.aui;
 
-import com.ekassaauto.database.entities.InstWormCacheEntity;
-import com.ekassaauto.database.entities.SentSmsEntity;
+import com.ekassaauto.database.entities.aui.SentSmsEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;

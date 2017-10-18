@@ -32,19 +32,17 @@ public class MainPage extends AbstractPage {
     @CacheLookup
     @FindBy(xpath = "//md-dialog[@aria-label='Pożyczka konsolidacyjna ...']")
     public WebElement mdDialogOfConsolidationInfo;
-    @FindBy(xpath = "//md-checkbox[@ng-model='agreedToConditions']") private WebElement pdlMainScreenCheckbox;
-    @FindBy(xpath = "(//md-checkbox[@ng-model='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
-    public WebElement termsLinkInPDL;
-    @FindBy(xpath = "(//span[@ng-click='showAgreements($event)'])[2]")
-    public WebElement termsLinkInConsolidation;
-    @FindBy(xpath = "//span[@ng-click='showLoanInfo($event)']") private WebElement linkLoanInfo;
-    @FindBy(xpath = "//div[@ng-click='showConsolidationInfo($event)']") private WebElement linkConsolidationInfo;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") private WebElement pdlMainScreenCheckbox;
+    @FindBy(xpath = "(//md-checkbox[@name='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
+    @FindBy(xpath = "//span[@ng-click='$ctrl.showAgreements($event)']") public WebElement termsLinkInPDL;
+    @FindBy(xpath = "(//span[@ng-click='$ctrl.showAgreements($event)'])[2]") public WebElement termsLinkInConsolidation;
+    @FindBy(xpath = "//span[@ng-click='$ctrl.showLoanInfo($event)']") private WebElement linkLoanInfo;
+    @FindBy(xpath = "(//span[@ng-click='$ctrl.showConsolidationInfo($event)'])[2]") private WebElement linkConsolidationInfo;
     @FindBy(xpath = "//span[text()='Pożyczka konsolidacyjna']") WebElement consolidationOverlay;
-    @FindBy(xpath = "//input[@ng-model='loan.amount']") public WebElement pdlAmountInput;
-    @FindBy(xpath = "//input[@ng-model='loan.term']") public WebElement pdlTermInput;
-    @FindBy(xpath = "//input[@ng-model='consolidation.totalPaymentRequested']") public WebElement consolidationTrancheInput;
-    @FindBy(xpath = "//input[@ng-model='consolidation.amount']") public WebElement consolidationPaymentInput;
+    @FindBy(xpath = "//input[@ng-model='$ctrl.loan.amount']") public WebElement pdlAmountInput;
+    @FindBy(xpath = "//input[@ng-model='$ctrl.loan.term']") public WebElement pdlTermInput;
+    @FindBy(xpath = "//input[@ng-model='$ctrl.consolidation.totalPaymentRequested']") public WebElement consolidationTrancheInput;
+    @FindBy(xpath = "//input[@ng-model='$ctrl.consolidation.amount']") public WebElement consolidationPaymentInput;
 
 
     public MainPage(WebDriver driver) {

@@ -1,8 +1,6 @@
-package com.ekassaauto.database.dao;
+package com.ekassaauto.database.dao.aui;
 
-import com.ekassaauto.database.entities.InstWormCacheEntity;
-import com.ekassaauto.database.entities.PlainUserEntity;
-import com.ekassaauto.database.entities.UserCredential;
+import com.ekassaauto.database.entities.aui.InstWormCacheEntity;
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityManager;
@@ -10,8 +8,6 @@ import javax.persistence.TypedQuery;
 
 import java.sql.SQLException;
 import java.util.List;
-
-import static com.ekassaauto.Registration.*;
 
 /**
  * Created by user on 15.08.2017.

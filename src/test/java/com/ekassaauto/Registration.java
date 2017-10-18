@@ -2,21 +2,16 @@ package com.ekassaauto;
 
 import com.ekassaauto.PageObjects.*;
 import com.ekassaauto.database.PersistenceManager;
-import com.ekassaauto.database.dao.*;
-import com.ekassaauto.database.entities.PlainUserEntity;
+import com.ekassaauto.database.dao.aui.*;
+import com.ekassaauto.database.dao.risk.BoDealsDAO;
+import com.ekassaauto.database.entities.aui.PlainUserEntity;
 import io.github.bonigarcia.wdm.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
-import java.io.IOException;
+import javax.persistence.Table;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -29,8 +24,8 @@ import static org.testng.Assert.*;
 @Test
 public class Registration {
     protected WebDriver driver;
-    public static String regPhone = "222222218", name = "Alex", lastName = "Paskhin", pesel = "57110181345",
-            email = "a.paskhin@gmail.com", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
+    public static String regPhone = "222222219", name = "Alex", lastName = "Paskhin", pesel = "57110181345",
+            email = "tramo-doll@bigmir.net", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
             bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
             testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", netIncome1 = "3800", empPhone1 = "987654321", instantorTestNik = "fake60!";
     private WebDriver.Options options;
@@ -40,22 +35,25 @@ public class Registration {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
-//        static MyProfilePage myProfilePage;
+//         MyProfilePage myProfilePage;
     static SmsVerificationPage smsVerificationPage;
     public static UserCredentialsDAO userCredentialsDAO;
     public static SentSmsDAO sentSmsDAO;
     static PlainUsersDAO plainUsersDAO;
     public static InstWormCacheDAO instWormCacheDAO;
     static CpaShadowClientInformationsDAO cpaShadowClientInformationsDAO;
+    static CpaClientCasheDAO cpaClientCasheDAO;
+
+    static BoDealsDAO boDealsDAO;
 
     @BeforeSuite
-    public void createDBConnection() {
-        EntityManager entityManager = (new PersistenceManager()).getEntityManager();
-        userCredentialsDAO = new UserCredentialsDAO(entityManager);
-        plainUsersDAO = new PlainUsersDAO(entityManager);
-        sentSmsDAO = new SentSmsDAO(entityManager);
-        instWormCacheDAO = new InstWormCacheDAO(entityManager);
-        cpaShadowClientInformationsDAO = new CpaShadowClientInformationsDAO(entityManager);
+    public void createDBConnections() {
+        EntityManager auiEntityManager = (new PersistenceManager()).getAuiEntityManager();
+        userCredentialsDAO = new UserCredentialsDAO(auiEntityManager);
+        plainUsersDAO = new PlainUsersDAO(auiEntityManager);
+        sentSmsDAO = new SentSmsDAO(auiEntityManager);
+        instWormCacheDAO = new InstWormCacheDAO(auiEntityManager);
+        cpaShadowClientInformationsDAO = new CpaShadowClientInformationsDAO(auiEntityManager);
     }
 
     @BeforeClass
@@ -309,6 +307,9 @@ public class Registration {
                         " with unmarked marketing checkbox!");
     }
 
+//    @Test(priority = 7)
+//    public void
+
     @Test(priority = 7)
     public void registrationWithMarkedConcessionToEmailsCheckbox() {
         assertTrue(userCredentialsDAO.getStateOfMarketingDistributionByPhone(regPhone),
@@ -355,8 +356,8 @@ public class Registration {
 //        aboutMePage.fillAboutMePageWithBasicAcceptableData();
 //        aboutMePage.getValue(aboutMePage.peselField);
         pdlOfferPage = aboutMePage.submitAboutMePageWithBasicAcceptableData();
-        assertTrue(pdlOfferPage.findWithXPath("//div[@class='fish__body-wrapper']").isDisplayed(),
-                "The train of the offer screen isn't displayed, pdlOfferPage isn't loaded!");
+        assertTrue(pdlOfferPage.findWithXPath("//article[@ng-if='topupPackage']").isDisplayed(),
+                "The tou-up article isn't displayed, pdlOfferPage isn't loaded!");
         assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
                 "The client isn't registered after passing aboutMe page!");
     }
@@ -625,12 +626,12 @@ public class Registration {
     public void submitEventForEnterKeyInUnauthorizedStateAtPdlForm() {
         mainPage.markPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlAmountInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='loan.amount']").size(), 1,
+        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
 
         mainPage.markPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlTermInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='loan.amount']").size(), 1,
+        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
     }
 

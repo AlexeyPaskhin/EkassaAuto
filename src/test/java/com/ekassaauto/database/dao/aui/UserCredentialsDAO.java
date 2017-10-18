@@ -1,6 +1,7 @@
-package com.ekassaauto.database.dao;
+package com.ekassaauto.database.dao.aui;
 
-import com.ekassaauto.database.entities.UserCredential;
+import com.ekassaauto.database.entities.aui.ScheduleEntity;
+import com.ekassaauto.database.entities.aui.UserCredential;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -38,6 +39,12 @@ public class UserCredentialsDAO {
                 UserCredential.class);
         query.setParameter("regPhone", regPhone);
         List<UserCredential> userCredentialList = query.getResultList();
+//        ScheduleEntity scheduleEntity = entityManager.createQuery("select s from ScheduleEntity s where s.id = 782607", ScheduleEntity.class).getSingleResult();
+//        entityManager.remove(scheduleEntity);
+//
+//        entityManager.getTransaction().commit();
+//        ScheduleEntity scheduleEntity = userCredentialList.get(0).getPlainUserEntity().getSuperDealEntities().get(0).getDealEntities().get(1).getScheduleEntities().get(0);
+//        entityManager.remove(scheduleEntity);
         userCredentialList.forEach(userCredential -> entityManager.remove(userCredential));
 //        System.out.println(userCredential);
         entityManager.getTransaction().commit();
@@ -48,8 +55,7 @@ public class UserCredentialsDAO {
         Query query = entityManager.createQuery("select users from UserCredential users inner join users.plainUserEntity pue where pue.email = :email",
                 UserCredential.class);
         query.setParameter("email", email);
-        List<UserCredential> resultList = query.getResultList();
-        return resultList;
+        return (List<UserCredential>) query.getResultList();
     }
 
     public void deleteUserByEmail(String email) {

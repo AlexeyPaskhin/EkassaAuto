@@ -1,6 +1,6 @@
-package com.ekassaauto.database.dao;
+package com.ekassaauto.database.dao.aui;
 
-import com.ekassaauto.database.entities.CpaShadowClientInformationsEntity;
+import com.ekassaauto.database.entities.aui.CpaShadowClientInformationsEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -27,6 +27,13 @@ public class CpaShadowClientInformationsDAO {
         TypedQuery<CpaShadowClientInformationsEntity> query = entityManager.createNamedQuery(
                 "getExistingUsersCpaEntitiesWithoutRejectAndWithSkipPersonalData", CpaShadowClientInformationsEntity.class);
         query.setMaxResults(1);
+        return query.getSingleResult();
+    }
+
+    public CpaShadowClientInformationsEntity getCpaClientById(Long id) {
+        TypedQuery<CpaShadowClientInformationsEntity> query = entityManager.createNamedQuery("getCpaClientById",
+                CpaShadowClientInformationsEntity.class);
+        query.setParameter("id", id);
         return query.getSingleResult();
     }
 

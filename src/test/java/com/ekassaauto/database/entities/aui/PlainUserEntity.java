@@ -1,6 +1,7 @@
-package com.ekassaauto.database.entities;
+package com.ekassaauto.database.entities.aui;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Created by user on 15.06.2017.
@@ -50,6 +51,10 @@ public class PlainUserEntity {
     private Long workExperience;
     @Column(name = "ismarketingdistribution")
     private Boolean isMarketingDistribution;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "userprofileid")
+    private List<SuperDealEntity> superDealEntities;
 
     public Long getId() {
         return id;
@@ -249,6 +254,14 @@ public class PlainUserEntity {
 
     public void setMarketingDistribution(Boolean marketingDistribution) {
         isMarketingDistribution = marketingDistribution;
+    }
+
+    public List<SuperDealEntity> getSuperDealEntities() {
+        return superDealEntities;
+    }
+
+    public void setSuperDealEntities(List<SuperDealEntity> superDealEntities) {
+        this.superDealEntities = superDealEntities;
     }
 
     @Override

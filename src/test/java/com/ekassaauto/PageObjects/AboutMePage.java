@@ -20,23 +20,23 @@ public class AboutMePage extends AbstractPage {
     private Map<WebElement, String> dataForFillingAboutMePageMap;
 
     @CacheLookup @FindBy(xpath = "//input[@name='pesel']") public WebElement peselField;
-    @CacheLookup @FindBy(xpath = "//input[@name='social-number']") public WebElement socialNumberField;
+    @CacheLookup @FindBy(xpath = "//input[@name='socialNumber']") public WebElement socialNumberField;
     @CacheLookup @FindBy(xpath = "//input[@name='account']") public WebElement bankAccountField;
-    @CacheLookup @FindBy(xpath = "//input[@name='mail']") public WebElement emailField;
+    @CacheLookup @FindBy(xpath = "//input[@name='email']") public WebElement emailField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Stan cywilny']") public WebElement maritalStatusListbox;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Dzieci w wieku do 21 lat']") public WebElement dependentsQuantityListbox;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Wykształcenie']") public WebElement educationListbox;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Wykonywany zawód']") public WebElement occupationTypeListbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.existPmt']") public WebElement currentDebtField;
+    @CacheLookup @FindBy(xpath = "//input[@name='existPmt']") public WebElement currentDebtField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Osoba kontaktowa']") public WebElement contactPersonListbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='contactPersonPhone']") public WebElement contactPersonPhoneField;
+    @CacheLookup @FindBy(xpath = "//input[@name='contactPersonPhone']") public WebElement contactPersonPhoneField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Nieruchomość, w której zamieszkujesz']") public WebElement propertyOwnListbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.postalCode']") public WebElement postalCodeField;
+    @CacheLookup @FindBy(xpath = "//input[@name='postalCode']") public WebElement postalCodeField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Województwo']") public WebElement livRegionListbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.city']") public WebElement livCityField;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.street']") public WebElement livStreetField;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.building']") public WebElement livBuildingField;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='user.flat']") public WebElement livApartmentField;
+    @CacheLookup @FindBy(xpath = "//input[@name='city']") public WebElement livCityField;
+    @CacheLookup @FindBy(xpath = "//input[@name='street']") public WebElement livStreetField;
+    @CacheLookup @FindBy(xpath = "//input[@name='building']") public WebElement livBuildingField;
+    @CacheLookup @FindBy(xpath = "//input[@name='flat']") public WebElement livApartmentField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Zatrudnienia']") public WebElement empType1Listbox;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Okres pracy w podanego pracodawcy']") public WebElement workExpirience1Listbox;
     @CacheLookup @FindBy(xpath = "//input[@ng-model='job.income']") public WebElement netIncome1Field;
@@ -53,7 +53,7 @@ public class AboutMePage extends AbstractPage {
     }
 
     private void initPageElements() {
-        aboutMeForm = new Form(findWithXPath("//form[@name='workForm']"));
+        aboutMeForm = new Form(findWithXPath("//form[@name='$ctrl.form.workForm']"));
         dataForFillingAboutMePageMap = new HashMap<>();
     }
 

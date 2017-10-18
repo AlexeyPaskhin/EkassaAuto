@@ -1,6 +1,6 @@
 package com.ekassaauto.PageObjects;
 
-import com.ekassaauto.database.entities.UserCredential;
+import com.ekassaauto.database.entities.aui.UserCredential;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -35,11 +35,11 @@ public class AuthPage extends AbstractPage {
     @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']")
     public WebElement termsCheckBox;
     @FindBy(xpath = "//button[@type='submit']") WebElement authForwardButton;
-    @FindBy(xpath = "//span[@ng-click='showAgreements($event)']")
+    @FindBy(xpath = "//span[@ng-click='$ctrl.showAgreements($event)']")
     public WebElement linkRegTerms;
     @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']")
     public WebElement marketingCheckbox;
-    @FindBy(xpath = "//span[@ng-click='showMarketingAgreements($event)']") WebElement linkMarketingTerms;
+    @FindBy(xpath = "//span[@ng-click='$ctrl.showMarketingAgreements($event)']") WebElement linkMarketingTerms;
 
     public AuthPage(WebDriver driver) {
         super(driver);
@@ -114,9 +114,10 @@ public class AuthPage extends AbstractPage {
 //                .inputToEmailField(email)
 //                .inputToPasswordField(password)
 //                .inputToPassConfirmField(password);
-        if(userCredentialsDAO.getUserByEmail(email).size()>0) {
-            userCredentialsDAO.deleteUserByEmail(email);
-        }
+
+//        if(userCredentialsDAO.getUserByEmail(email).size()>0) {
+//            userCredentialsDAO.deleteUserByEmail(email);
+//        }
         return this;
     }
 

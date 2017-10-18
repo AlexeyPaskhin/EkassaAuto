@@ -1,4 +1,4 @@
-package com.ekassaauto.database.entities;
+package com.ekassaauto.database.entities.aui;
 
 import javax.persistence.*;
 
@@ -12,7 +12,11 @@ import javax.persistence.*;
                 name = "getExistingUsersCpaEntitiesWithoutRejectAndWithSkipPersonalData",
                 query = "select cscie from CpaShadowClientInformationsEntity cscie, UserCredential user where cscie.phone=user.phone and cscie.riskPolicyReject=false" +
                         " and cscie.skipPersonalData=true order by cscie.id desc "
-        )                                                    
+        )  ,
+        @NamedQuery(
+                name = "getCpaClientById",
+                query = "select cscie from CpaShadowClientInformationsEntity cscie where id = :id"
+        )
 })
 public class CpaShadowClientInformationsEntity {
     @Id

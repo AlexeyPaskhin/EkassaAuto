@@ -22,11 +22,11 @@ public class PdlOfferPage extends AbstractPage {
 
     public PdlOfferPage(WebDriver driver) {
         super(driver);
-        initPageElements();
+//        initPageElements();
     }
 
     private void initPageElements() {
-            pdlOfferForm = new Form(findWithXPath("//form[@name='paydayOffer']"));
+//            pdlOfferForm = new Form(findWithXPath("//form[@name='paydayOffer']"));
     }
 
 

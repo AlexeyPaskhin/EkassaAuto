@@ -3,6 +3,7 @@ package com.ekassaauto.PageObjects;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -22,9 +23,11 @@ public class BankAccountVerificationPage extends AbstractPage {
     private Form wormyForm;
     private Form instantorForm;
 
+    private static final String instantorListBoxLocator = "//button[@data-loading-text='Ładowanie…']";
+
     @FindBy(xpath = "//md-select[@placeholder='Wybierz swój bank']") WebElement wormyListBox;
     @FindBy(xpath = "//iframe[@name='instantor']") WebElement instantorFrame;
-    @FindBy(xpath = "//button[@data-loading-text='Ładowanie…']") WebElement instantorListBox;
+    @FindBy(xpath = instantorListBoxLocator) WebElement instantorListBox;
     @FindBy(xpath = "//ul[@style='display: block;']//li/*[contains(text(), 'Bank Zachodni WBK S.A.')]/..")
     WebElement bankZachodniInstantorListBoxOption;
     @FindBy(xpath = "//*[@id='input_nik']") WebElement instantorNikInput;
@@ -50,6 +53,12 @@ public class BankAccountVerificationPage extends AbstractPage {
     }
 
     private BankAccountVerificationPage selectBankZachodhiAtInstantor() {
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }  //только так работает блядь
+//        explWait.until(presenceOfElementLocated(By.xpath(instantorListBoxLocator)));
         instantorListBox.click();
         bankZachodniInstantorListBoxOption.click();
         waitForAngularRequestsToFinish();

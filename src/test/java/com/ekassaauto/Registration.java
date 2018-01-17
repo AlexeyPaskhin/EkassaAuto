@@ -11,7 +11,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Table;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +34,7 @@ public class Registration {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
-//         MyProfilePage myProfilePage;
+    private MyProfilePage myProfilePage;
     static SmsVerificationPage smsVerificationPage;
     public static UserCredentialsDAO userCredentialsDAO;
     public static SentSmsDAO sentSmsDAO;
@@ -43,6 +42,7 @@ public class Registration {
     public static InstWormCacheDAO instWormCacheDAO;
     static CpaShadowClientInformationsDAO cpaShadowClientInformationsDAO;
     static CpaClientCasheDAO cpaClientCasheDAO;
+    static BMOutgoingPaymentDAO bmOutgoingPaymentDAO;
 
     static BoDealsDAO boDealsDAO;
 
@@ -81,35 +81,33 @@ public class Registration {
         options.window().maximize();
         mainPage = new MainPage(driver);
 
-//        mainPage.switchToConsolidationForm();
+//        mainPage.switchToConsolidation();
 
-//        authPage = mainPage.passPdlFormInUnauthorizedState();
+//        authPage = mainPage.startSmallPdlInUnauthorizedState();
 //        aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
-//        mainPage = new MainPage(driver).switchToConsolidationForm();
+//        mainPage = new MainPage(driver).switchToConsolidation();
 
     }
-
-
-
 
 
     @Test(priority = 16)
     public void submitEventForEnterKeyInAuthorizedStateAtConsolidationForm() {
-        mainPage.switchToConsolidationForm();
+        mainPage.switchToConsolidation();
         mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationTrancheInput);
-        assertTrue(mainPage.pdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
 
-        mainPage.markPDLCheckbox()
+        mainPage.markSmallPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationPaymentInput);
-        assertTrue(mainPage.pdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
     }
 
-    @Test(priority = 15)
+    @Test(priority = 15, dependsOnMethods = "registrationThroughConsForm")
     public void inscriptionInTheConsolidationSubmitButtonAfterCreationConsolidationProcess() {
         mainPage = new MainPage(driver)
-                .switchToConsolidationForm();
-        assertEquals(mainPage.findElementsByXPath("//*[@ng-click='goToNextTask(true)']").size(), 1,
+                .switchToConsolidation();
+        mainPage.waitForAngularRequestsToFinish();
+        assertEquals(mainPage.findElementsByXPath(MainPage.goToNextTaskConsolidationButtonLocator).size(), 1,
                 "goToNextTask consolidation button isn't displayed after creation pdl process!");
         assertEquals(mainPage.goToNextTaskConsolidationButton.getText(), "KOLEJNY KROK");
     }
@@ -199,7 +197,7 @@ public class Registration {
             mainPage.closeDialogWindow();
             mainPage.waitForClosingConsolidationInfo();
         } catch (NoSuchElementException ex) {
-            mainPage = new MainPage(driver).switchToConsolidationForm();
+            mainPage = new MainPage(driver).switchToConsolidation();
             throw new AssertionError("Info about the loans isn't opened!", ex);
         }
     }
@@ -226,7 +224,7 @@ public class Registration {
             assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
                     "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
-            mainPage = new MainPage(driver).switchToConsolidationForm();
+            mainPage = new MainPage(driver).switchToConsolidation();
             throw new AssertionError("Invalid consolidation form is submitted", ex);
         }
     }
@@ -234,14 +232,14 @@ public class Registration {
     @Test(priority = 11)
     public void submitEventForEnterKeyInUnauthorizedStateAtConsolidationForm() {
         mainPage.logOut()
-                .switchToConsolidationForm();
+                .switchToConsolidation();
         mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationTrancheInput);
-        assertTrue(mainPage.pdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
 
-        mainPage.markPDLCheckbox()
+        mainPage.markSmallPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationPaymentInput);
-        assertTrue(mainPage.pdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
     }
 
     //здесь когда поле ввода приобретает зеленый цвет - оно становится в фокусе
@@ -249,7 +247,7 @@ public class Registration {
 //    @Test(priority = 11)
 //    public void submittingEmptyConsolidationForm() {
 //                mainPage.logOut();
-//        mainPage.switchToConsolidationForm()
+//        mainPage.switchToConsolidation()
 //                .uncheckConsolidationCheckbox()
 ////                .inputToConsolidationPhone("")
 //                .submitInvalidConsolidationForm()
@@ -275,14 +273,14 @@ public class Registration {
 
     @Test(priority = 10)
     public void submitEventForEnterKeyInAuthorizedStateAtPdlForm() {
-        mainPage.markPDLCheckbox()
-                .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlAmountInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='loan.amount']").size(), 1,
+        mainPage.markSmallPDLCheckbox()
+                .submitFormWithEnterKeyThroughSpecificField(mainPage.smallPdlAmountInput);
+        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
 
-        mainPage.markPDLCheckbox()
+        mainPage.markSmallPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlTermInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='loan.amount']").size(), 1,
+        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
     }
 
@@ -290,7 +288,7 @@ public class Registration {
     public void inscriptionInThePdlSubmitButtonAfterCreationPdlProcess() {
         mainPage = new MainPage(driver);
         mainPage.waitForAngularRequestsToFinish();
-        assertEquals(mainPage.findElementsByXPath("//*[@ng-click='goToNextTask(false)']").size(), 1,
+        assertEquals(mainPage.findElementsByXPath("//*[@ng-click='$ctrl.goToNextTask(false)']").size(), 1,
                 "goToNextTask Pdl Button isn't displayed after creation pdl process!");
         assertEquals(mainPage.goToNextTaskPdlButton.getText(), "KOLEJNY KROK");
     }
@@ -298,7 +296,7 @@ public class Registration {
     @Test(priority = 8)
     public void submittingRegFormWithUnmarkedConcessionToEmailsCheckbox() {
         mainPage.logOut()
-                .passPdlFormInUnauthorizedState()
+                .startSmallPdlInUnauthorizedState()
                 .unmarkMarketingCheckbox()
                 .submitAuthFormForRegistrationWithVerifiedData()
                 .submitAboutMePageWithBasicAcceptableData();
@@ -307,8 +305,21 @@ public class Registration {
                         " with unmarked marketing checkbox!");
     }
 
-//    @Test(priority = 7)
-//    public void
+    @Test(priority = 7, dependsOnMethods = "passingInitiallyBlankAboutMeScreenForRegistration")
+    public void enteringFirstTimeToPersonalAccount() {
+        myProfilePage = pdlOfferPage.goToMyProfile();
+        assertTrue(userCredentialsDAO.getStateOfFirstTimeEnteredByPhone(regPhone),
+                "The 'true' value isn't set at the plainUsers table at the firsttimeentered field immediately after registration");
+        assertEquals(myProfilePage.findElementsByXPath("//md-dialog[@aria-label='Rekomendujemy zmianę ...']").size(),
+                1, "The dialog window for setting a password isn't present while first entering to personal profile!");
+        assertTrue(myProfilePage.oneElementIsPresentAtAPage("//h4[text()='Rekomendujemy zmianę hasła w wygodnym dla Ciebie.']"),
+                "The dialog window for setting a password isn't displayed!");
+
+        myProfilePage.setNewPasswordAtPopUp(password);
+        assertEquals(myProfilePage.findElementsByXPath("//md-dialog[@aria-label='Rekomendujemy zmianę ...']").size(),
+                0, "The dialog window for setting a password isn't hided after new pass was set!");
+        //todo to bound with testLink
+    }
 
     @Test(priority = 7)
     public void registrationWithMarkedConcessionToEmailsCheckbox() {
@@ -356,8 +367,9 @@ public class Registration {
 //        aboutMePage.fillAboutMePageWithBasicAcceptableData();
 //        aboutMePage.getValue(aboutMePage.peselField);
         pdlOfferPage = aboutMePage.submitAboutMePageWithBasicAcceptableData();
-        assertTrue(pdlOfferPage.findWithXPath("//article[@ng-if='topupPackage']").isDisplayed(),
-                "The tou-up article isn't displayed, pdlOfferPage isn't loaded!");
+        assertTrue(pdlOfferPage.oneElementIsPresentAtAPage("//article[@ng-if='$ctrl.topupPackage']"));
+        assertTrue(pdlOfferPage.findWithXPath("//article[@ng-if='$ctrl.topupPackage']").isDisplayed(),
+                "The top-up article isn't displayed, pdlOfferPage isn't loaded!");
         assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
                 "The client isn't registered after passing aboutMe page!");
     }
@@ -571,7 +583,8 @@ public class Registration {
 
     @Test(priority = 2)
     public void successfulSubmittingPdlForm() {
-        authPage = mainPage.passPdlFormInUnauthorizedState();
+        mainPage.switchToSmallPdl();
+        authPage = mainPage.startSmallPdlInUnauthorizedState();
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
@@ -582,13 +595,30 @@ public class Registration {
     }
 
     @Test(priority = 1)
-    public void uncheckedCheckbox() {
-        mainPage.unMarkPDLCheckbox()
-                .submitInvalidPDLForm()
+    public void uncheckedCheckboxLargePdl() {
+        mainPage.switchToLargePdl();
+        mainPage.unmarkLargePDLCheckbox()
+                .submitInvalidLargePDLForm()
                 .waitForAngularRequestsToFinish();
         try {
-            assertTrue(mainPage.fieldWithPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
-            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInPDL),
+            assertTrue(mainPage.fieldWithLargePDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInLargePDL),
+                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
+        } catch (NoSuchElementException ex) {
+            mainPage = new MainPage(driver);
+            throw new AssertionError("Invalid PDL form is submitted", ex);
+        }
+    }
+
+    @Test(priority = 1)
+    public void uncheckedCheckboxSmallPdl() {
+        mainPage.switchToSmallPdl()
+                .unmarkSmallPDLCheckbox()
+                .submitInvalidSmallPDLForm()
+                .waitForAngularRequestsToFinish();
+        try {
+            assertTrue(mainPage.fieldWithSmallPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInSmallPDL),
                     "The link to the terms near to invalid checkbox isn't highlighted with red color!");
         } catch (NoSuchElementException ex) {
             mainPage = new MainPage(driver);
@@ -600,21 +630,21 @@ public class Registration {
     //тест должен выполнятся с нетронутым инпутом телефона, поэтому все тесты со взаимодествием с инпутом имеют приоритет выше
 //    @Test(priority = 1)
 //    public void submittingEmptyPdlForm() throws InterruptedException {
-//        mainPage.unMarkPDLCheckbox()
+//        mainPage.unmarkSmallPDLCheckbox()
 ////                .inputToPhoneField("")
-//                .submitInvalidPDLForm()
+//                .submitInvalidSmallPDLForm()
 //                .waitForAngularRequestsToFinish();
 //        try {
 ////            assertTrue(mainPage.inputIsInvalid(mainPage.pdlPhoneInput));
 ////            assertTrue(mainPage.elementIsGreen(mainPage.pdlPhoneInput),
 ////                    "PDL input isn't focused after first submitting blank PDL form!");
-////            mainPage.submitInvalidPDLForm()
+////            mainPage.submitInvalidSmallPDLForm()
 ////                    .waitForReaction();
 //            assertTrue(mainPage.fieldBorderIsRed(mainPage.pdlPhoneInput) ||
 //                            mainPage.elementIsRed(mainPage.findWithXPath("//*[contains(text(), 'Telefon komórkowy')]")),
 //                    "Border of invalid field isn't highlighted with red color!");
-//            assertTrue(mainPage.fieldWithPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
-//            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInPDL),
+//            assertTrue(mainPage.fieldWithSmallPDLCheckboxIsInvalid(), "Unmarked checkbox has valid state!");
+//            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInSmallPDL),
 //                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
 //        } catch (NoSuchElementException ex) {
 //            mainPage = new MainPage(driver);
@@ -623,46 +653,76 @@ public class Registration {
 //    }
 
     @Test(priority = 1)
-    public void submitEventForEnterKeyInUnauthorizedStateAtPdlForm() {
-        mainPage.markPDLCheckbox()
-                .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlAmountInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
+    public void submitEventForEnterKeyInUnauthorizedStateAtPdlTabs() {
+        mainPage.switchToSmallPdl()
+                .markSmallPDLCheckbox()
+                .submitFormWithEnterKeyThroughSpecificField(mainPage.smallPdlAmountInput);
+        assertTrue(mainPage.oneElementIsPresentAtAPage(MainPage.smallPdlAmountInputLocator),
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
 
-        mainPage.markPDLCheckbox()
-                .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlTermInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
+        mainPage.switchToLargePdl()
+                .markLargePDLCheckbox()
+                .submitFormWithEnterKeyThroughSpecificField(mainPage.largePdlAmountInput);
+        assertTrue(mainPage.oneElementIsPresentAtAPage(MainPage.largePdlAmountInputLocator),
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
     }
 
     @Test(priority = 1)
-    public void interactionWithTheLinkLoanInfo() {
-        mainPage.clickLoanInfo();
+    public void interactionWithTheLinkLargeLoanInfo() {
+        mainPage.switchToLargePdl()
+                .clickLargeLoanInfo();
+        assertTrue(mainPage.oneElementIsPresentAtAPage(MainPage.mdDialogOfLargeLoanInfoLocator),
+                "Info about the loans isn't opened at the Large Pdl tab!");
+        assertTrue(mainPage.mdDialogOfLargeLoanInfo.isDisplayed(), "Loan info isn't displayed!");
+        mainPage.closeDialogWindow();
+        mainPage.waitForAngularRequestsToFinish();
+//        mainPage.waitForClosingSmallLoanInfo();
+    }
+
+    @Test(priority = 1)
+    public void interactionWithTheLinkSmallLoanInfo() {
+        mainPage.switchToSmallPdl()
+                .clickSmallLoanInfo();
         try {
-            assertTrue(mainPage.mdDialogOfLoanInfo.isDisplayed(), "Loan info isn't displayed!");
+            assertTrue(mainPage.mdDialogOfSmallLoanInfo.isDisplayed(), "Loan info isn't displayed!");
             mainPage.closeDialogWindow();
-            mainPage.waitForClosingLoanInfo();
+            mainPage.waitForClosingSmallLoanInfo();
         } catch (NoSuchElementException ex) {
-            throw new AssertionError("Info about the loans isn't opened!", ex);
+            throw new AssertionError("Info about the loans isn't opened at the small Pdl tab!", ex);
         }
     }
 
     @Test(priority = 1)
     public void accessibilityOfAnAccessToPersDataText() {
-        mainPage.clickTheTermsInPDLForm();
+        mainPage.clickTheTermsInSmallPDLForm();
         try {
-            assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed!");
+            assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed after click on " +
+                    MainPage.termsLinkInSmallPDLLocator);
             mainPage.closeDialogWindow();
             mainPage.waitForClosingTerms();
         } catch (NoSuchElementException ex) {
-            throw new AssertionError("Terms aren't opened!", ex);
+            throw new AssertionError("Terms aren't opened after click on " + MainPage.termsLinkInSmallPDLLocator, ex);
         }
+        mainPage.switchToLargePdl()
+                .clickTheTermsInLargePDLForm();
+        assertTrue(mainPage.oneElementIsPresentAtAPage(MainPage.mdDialogOfAccessToPersDataLocator),
+                "Terms aren't opened after click on " + MainPage.termsLinkInLargePDLLocator);
+        assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed after click on " +
+                MainPage.termsLinkInSmallPDLLocator);
+        mainPage.closeDialogWindow();
+        mainPage.waitForClosingTerms();
+        mainPage.switchToSmallPdl();
     }
 
     @Test(priority = 1)
     public void inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent() {
-        assertEquals(mainPage.startPdlProcessButton.getText(), "DALEJ");
+        mainPage.switchToSmallPdl();
+        assertEquals(mainPage.startSmallPdlProcessButton.getText(), "DALEJ");
+        mainPage.switchToLargePdl();
+        assertEquals(mainPage.startLargePdlProcessButton.getText(), "DALEJ");
+        mainPage.switchToConsolidation();
         assertEquals(mainPage.startConsProcessButton.getText(), "DALEJ");
+        mainPage.switchToSmallPdl();
     }
 
 

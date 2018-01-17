@@ -55,7 +55,7 @@ public class SuccessfulPDLApplications {
 //            driver = new FirefoxDriver();
 //        }
         options = driver.manage();
-        options.timeouts().implicitlyWait(2,TimeUnit.SECONDS);
+        options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         try {
             options.window().maximize();  //из-за бага в фаерфоксе
         } catch (WebDriverException e) {
@@ -65,8 +65,9 @@ public class SuccessfulPDLApplications {
 
     @BeforeSuite
     public void createDBConnections() {
-        EntityManager auiEntityManager = (new PersistenceManager()).getAuiEntityManager();
-        EntityManager riskEntityManager = (new PersistenceManager()).getRiskEntityManager();
+        PersistenceManager persistenceManager = new PersistenceManager();
+        EntityManager auiEntityManager = persistenceManager.getAuiEntityManager();
+        EntityManager riskEntityManager = persistenceManager.getRiskEntityManager();
 
         userCredentialsDAO = new UserCredentialsDAO(auiEntityManager);
         plainUsersDAO = new PlainUsersDAO(auiEntityManager);
@@ -74,6 +75,7 @@ public class SuccessfulPDLApplications {
         instWormCacheDAO = new InstWormCacheDAO(auiEntityManager);
         cpaShadowClientInformationsDAO = new CpaShadowClientInformationsDAO(auiEntityManager);
         cpaClientCasheDAO = new CpaClientCasheDAO(auiEntityManager);
+        bmOutgoingPaymentDAO = new BMOutgoingPaymentDAO(auiEntityManager);
 
         boDealsDAO = new BoDealsDAO(riskEntityManager);
     }
@@ -102,51 +104,69 @@ public class SuccessfulPDLApplications {
         startBrowser();
         mainPage = new MainPage(driver);
 
-//        mainPage.switchToConsolidationForm();
-//        authPage = mainPage.passPdlFormInUnauthorizedState();
+//        mainPage.switchToConsolidation();
+//        authPage = mainPage.startSmallPdlInUnauthorizedState();
 
 
     }
 
-    @Test(priority = 15)
+    @Test
+    public void createDuplicateBMTransactions() {
+        while (true) {
+//        while (Calendar.getInstance().before("2017-11-24 17:10:00")) {
+            bmOutgoingPaymentDAO.createDuplicateBMTransaction(66127910L);
+        }
+    }
+
+    @Test(priority = 17)
     public void firstAcceptableApplicationOnNewAccount() throws SQLException {
-        authPage = mainPage.passPdlFormInUnauthorizedState();
+        mainPage.logOut();
+        authPage = mainPage.startSmallPdlInUnauthorizedState();
         aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         aboutMePage.cleanInstWormCache(name, pesel, lastName, bankAccount);
         pdlOfferPage = aboutMePage.submitAboutMePageWithBasicAcceptableData();
-        bankAccountVerificationPage = pdlOfferPage.passingPdlOfferPageWithDefaultProposalWithoutBankCache(regPhone);
+        bankAccountVerificationPage = pdlOfferPage.passPdlOfferPageSelectingTopUpWithoutBankCache(regPhone);
         congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
         assertTrue(congratulationPage.congratsTitle.isDisplayed());
     }
 
-    @Test(priority = 15, dependsOnMethods = "firstAcceptableApplicationOnNewAccount")
-    public void secondAcceptableApplicationOnNewAccountWithInstantorCache() {
-        aboutMePage = mainPage.startNewPdlProcess();
-        pdlOfferPage = aboutMePage.submitPrefilledAboutMePageAfterFillindAcceptedRequiredData();
-        congratulationPage = pdlOfferPage.passingPdlOfferPageWithDefaultProposalWithSuccessfulBankCache(regPhone);
+    @Test(priority = 18/*, dependsOnMethods = "firstAcceptableApplicationOnNewAccount"*/)
+    public void receivingSuccessfulInstantorReport() throws SQLException {
+        mainPage.waitForReceivinginstantorReport(name, pesel, lastName, bankAccount);
+        assertTrue(instWormCacheDAO.instWormCacheIsSuccessful(name, pesel, lastName, bankAccount));
+    }
+
+    @Test(priority = 18, dependsOnMethods = "receivingSuccessfulInstantorReport")
+    public void secondAcceptableApplicationOnNewAccountHavingInstantorCache() {
+        aboutMePage = mainPage.startNewPdlProcessViaMyProfile();
+        pdlOfferPage = aboutMePage.passPrefilledAboutMePageGottenFromMyProfile();
+        congratulationPage = pdlOfferPage.passPdlOfferPageSelectingTopUpWithSuccessfulBankCache(regPhone);
         assertTrue(congratulationPage.congratsTitle.isDisplayed());
     }
 
     @Test
-    public void newCpaClientProcess() throws ParseException {
+    public void newCpaClientProcess() throws ParseException, SQLException {
         cpaClientCasheDAO.deleteAllCpaCache();
         userCredentialsDAO.deleteUserByPhone(regPhone);
+        instWormCacheDAO.deleteInstWormCache(name, pesel, lastName, bankAccount);
 
-        try(CloseableHttpClient client = HttpClientBuilder.create().setConnectionManagerShared(true).build()){
+        try (CloseableHttpClient client = HttpClientBuilder.create().setConnectionManagerShared(true).build()) {
 
             JSONParser parser = new JSONParser();
             JSONObject data = (JSONObject) parser.parse(new FileReader("src/test/resources/cpaInfo.json"));
             data.put("phone", regPhone);
+//            data.remove("livPostcode");
 
             HttpUriRequest request = makeCpaPostRequest(data);
 
             HttpResponse response = client.execute(request);
             System.out.println("RISK POLICY CHECK RESPONSE: " + response.getStatusLine().getStatusCode());
-            if(response.getStatusLine().getStatusCode() == 200){
+            if (response.getStatusLine().getStatusCode() == 200) {
                 JSONObject result = (JSONObject) parser.parse(IOUtils.toString(response.getEntity().getContent(), "utf-8"));
                 Long cpaId = (Long) result.get("unique_partner_id");
                 System.out.println("cpa_id: " + cpaId);
                 CpaShadowClientInformationsEntity newCpaClientEntity = cpaShadowClientInformationsDAO.getCpaClientById(cpaId);
+
                 assertTrue(newCpaClientEntity.isAutoLogin(), "New client cpa entry doesn't have auto login!");
                 assertTrue(newCpaClientEntity.isSkipPersonalData(),
                         "New cpa client will not see the offer screen immediately but will see the 'AboutMe' screen!");
@@ -175,19 +195,20 @@ public class SuccessfulPDLApplications {
                 .build();
     }
 
-    public static <T>  T getObjectFromJsonFile(String path, Class<T> type) {
+    public static <T> T getObjectFromJsonFile(String path, Class<T> type) {
         InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
         Gson gson = new Gson();
         return gson.fromJson(new InputStreamReader(inputStream), type);
     }
-    @Test(priority = 16)
+
+    @Test(priority = 17)
     public void cpaPdlProcessOfRegisteredClient() {
         mainPage.logOut();
         CpaShadowClientInformationsEntity cpaEntity = cpaShadowClientInformationsDAO.getExistingCpaClientInformationsEntity();
         cpaShadowClientInformationsDAO.setFieldsOfCpaEntityForSuccessfulPdl(cpaEntity);
         System.out.println(cpaEntity.getId());
         pdlOfferPage = mainPage.goToCpaProcessWithAutoLogin(cpaEntity.getId());
-        congratulationPage = pdlOfferPage.passingPdlOfferPageWithDefaultProposalWithSuccessfulBankCache(cpaEntity.getPhone());
+        congratulationPage = pdlOfferPage.passPdlOfferPageSelectingTopUpWithSuccessfulBankCache(cpaEntity.getPhone());
         assertTrue(congratulationPage.congratsTitle.isDisplayed());
     }
 

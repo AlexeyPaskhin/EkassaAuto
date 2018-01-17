@@ -11,7 +11,9 @@ import javax.persistence.*;
         @NamedQuery(
                 name = "getExistingUsersCpaEntitiesWithoutRejectAndWithSkipPersonalData",
                 query = "select cscie from CpaShadowClientInformationsEntity cscie, UserCredential user where cscie.phone=user.phone and cscie.riskPolicyReject=false" +
-                        " and cscie.skipPersonalData=true order by cscie.id desc "
+                        " and cscie.skipPersonalData=true" +
+                        " and cscie.activePdl=false" +
+                        " order by cscie.id desc "
         )  ,
         @NamedQuery(
                 name = "getCpaClientById",

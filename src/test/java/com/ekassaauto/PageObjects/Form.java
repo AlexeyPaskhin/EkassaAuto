@@ -28,6 +28,7 @@ public class Form extends AbstractElement {
         listBox.findElement(By.xpath("//div[@aria-hidden='false']//md-option[@value='" + value + "']")).click();
         //есть дублирующиеся варианты в разных листбоксах на странице, поэтому с помощью @aria-hidden='false'
         //выбираем только те элементы, что видимы на странице(там, где листбокс открыт)
+
         compareMap.put(listBox, value);
         return this;
     }
@@ -124,6 +125,35 @@ public class Form extends AbstractElement {
     public Form uncheck(WebElement chBox) {
         if (chBox.getAttribute("aria-checked").equals("true"))
             chBox.click();
+        return this;
+    }
+
+    Form unmarkLabelCheckbox(WebElement labelCheckbox) {
+        if (findWithXPath("//input[@id='" + labelCheckbox.getAttribute("for") + "']").isSelected()) {
+            labelCheckbox.click();
+        }
+        return this;
+    }
+
+    public Form markLabelCheckbox(WebElement labelCheckbox) {
+//        try {
+            if (!
+                    findWithXPath("//input[@id='" +
+                    labelCheckbox.getAttribute("for") + "']")
+                    .isSelected()) {
+                labelCheckbox.click();
+            }
+//        } catch (WebDriverException e) {
+//            System.out.println("Checkbox was not clickable due to overlay");
+
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e1) {
+//                e1.printStackTrace();
+//            }
+//
+//            markLabelCheckbox(labelCheckbox);
+//        }
         return this;
     }
 

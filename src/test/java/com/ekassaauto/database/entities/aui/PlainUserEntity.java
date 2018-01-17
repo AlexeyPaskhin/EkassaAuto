@@ -51,6 +51,8 @@ public class PlainUserEntity {
     private Long workExperience;
     @Column(name = "ismarketingdistribution")
     private Boolean isMarketingDistribution;
+    @Column(name = "firsttimeentered")
+    private Boolean firstTimeEntered;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "userprofileid")
@@ -250,6 +252,14 @@ public class PlainUserEntity {
 
     public Boolean getMarketingDistribution() {
         return isMarketingDistribution;
+    }
+
+    public Boolean getFirstTimeEntered() {
+        return firstTimeEntered;
+    }
+
+    public void setFirstTimeEntered(Boolean firstTimeEntered) {
+        this.firstTimeEntered = firstTimeEntered;
     }
 
     public void setMarketingDistribution(Boolean marketingDistribution) {

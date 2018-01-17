@@ -13,12 +13,16 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
  */
 public class PdlOfferPage extends AbstractPage {
     private Form pdlOfferForm;
+    private static final String selectTopUpButtonLocator = "//button[@ng-click='$ctrl.proceedToContracts($ctrl.topupPackage)']";
+    private static final String pdlOfferSmsCodeInputLocator = "//input[@ng-model='$ctrl.sms.code']";
+    private static final String moveForwardButtonLocator = "//button[@ng-disabled='!$ctrl.contractsChecked']";
 
     @FindBy(xpath = "//md-checkbox[@aria-label='Zgadzam się z warunkami']") WebElement agreementsCheckBox;
     @FindBy(xpath = "//span[contains(text(), 'Zgadzam z Warunkami')]/..") WebElement agreedWithTheTermsButton;
-    @FindBy(xpath = "//input[@ng-model='smsCodeEntered2']") WebElement pdlOfferSmsCodeInput;
-    @FindBy(xpath = "//span[contains(text(), 'Dalej')]/..") WebElement moveForwardButton;
+    @FindBy(xpath = pdlOfferSmsCodeInputLocator) WebElement pdlOfferSmsCodeInput;
+    @FindBy(xpath = moveForwardButtonLocator) WebElement moveForwardButton;
     @FindBy(xpath = "//md-radio-button[@aria-label='Polecamy']") WebElement defaultProposalRadioButton;
+    @FindBy(xpath = selectTopUpButtonLocator) WebElement selectTopUpButton;
 
     public PdlOfferPage(WebDriver driver) {
         super(driver);
@@ -30,54 +34,55 @@ public class PdlOfferPage extends AbstractPage {
     }
 
 
-    public CongratulationPage passingPdlOfferPageWithDefaultProposalWithSuccessfulBankCache(String phone) {
-        selectDefaultProposal()
+    public CongratulationPage passPdlOfferPageSelectingTopUpWithSuccessfulBankCache(String phone) {
+        selectTopUp()
                 .agreeWithTheTerms()
                 .enterSmsCode(phone)
-                .submitPdlOfferForm()
+                .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
 //        if (instWormCacheDAO.instWormCacheForPdlPresent(phone) && instWormCacheDAO.instWormCacheIsSuccessful(phone))  -  это должно быть тестовой логикой
             return new CongratulationPage(driver);
     }
 
-    RejectPage passingPdlOfferPageWithDefaultProposalWithFailedBankCache(String phone) {
-        selectDefaultProposal()
+    RejectPage passPdlOfferPageWithDefaultProposalWithFailedBankCache(String phone) {
+        selectTopUp()
                 .agreeWithTheTerms()
                 .enterSmsCode(phone)
-                .submitPdlOfferForm()
+                .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
 //        if (instWormCacheDAO.instWormCacheForPdlPresent(phone) && !instWormCacheDAO.instWormCacheIsSuccessful(phone))  -  это должно быть тестовой логикой
             return new RejectPage(driver);
         }
 
-    public BankAccountVerificationPage passingPdlOfferPageWithDefaultProposalWithoutBankCache(String phone) {
-        selectDefaultProposal()
+    public BankAccountVerificationPage passPdlOfferPageSelectingTopUpWithoutBankCache(String phone) {
+        selectTopUp()
                 .agreeWithTheTerms()
                 .enterSmsCode(phone)
-                .submitPdlOfferForm()
+                .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
         return new BankAccountVerificationPage(driver);
     }
 
-    PdlOfferPage submitPdlOfferForm() {
-        pdlOfferForm.submit(moveForwardButton);
+    PdlOfferPage clickMoveForwardButton() {
+        moveForwardButton.click();
         return this;
     }
 
     PdlOfferPage enterSmsCode(String phone) {
         explWait.until(visibilityOf(pdlOfferSmsCodeInput));
-        pdlOfferForm.set(pdlOfferSmsCodeInput, sentSmsDAO.getSmsCodeByPhone(phone));
+        set(pdlOfferSmsCodeInput, sentSmsDAO.getSmsCodeByPhone(phone));
         return this;
     }
 
     PdlOfferPage agreeWithTheTerms() {
-        pdlOfferForm.markCheckBox(agreementsCheckBox)
-                .submit(agreedWithTheTermsButton);
+
+        markCheckBox(agreementsCheckBox);
+        agreedWithTheTermsButton.click();
         return this;
     }
 
-    PdlOfferPage selectDefaultProposal() {
-        pdlOfferForm.markRadioButton(defaultProposalRadioButton);
+    PdlOfferPage selectTopUp() {
+        selectTopUpButton.click();
         return this;
     }
 }

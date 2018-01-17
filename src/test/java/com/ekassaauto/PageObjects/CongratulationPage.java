@@ -23,6 +23,6 @@ public class CongratulationPage extends AbstractPage {
     }
 
     public void waitForCongratsPage() {
-        new WebDriverWait(driver,20).until(visibilityOfElementLocated(By.xpath("//h2[text()='GRATULUJEMY!']")));
+        new WebDriverWait(driver,30).until(visibilityOfElementLocated(By.xpath("//h2[text()='GRATULUJEMY!']")));
     }
 }

@@ -75,16 +75,12 @@ public class AuthPage extends AbstractPage {
         return this;
     }
     AuthPage enterUnregisteredPhoneToPhoneInput(String text) {
-        try {
             List<UserCredential> requestedUserCredentials = userCredentialsDAO.getUserByPhone(regPhone);
             if (requestedUserCredentials.size() == 1) {
                 userCredentialsDAO.deleteUserByPhone(regPhone);
             } else if (requestedUserCredentials.size() > 1) {
                 throw new AssertionError("There are more than 1 unique phone number located in the usercredentials table!");
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         //todo удалять процессы так же с камунды с данным номером
 
         authForm.set(phoneField, text);

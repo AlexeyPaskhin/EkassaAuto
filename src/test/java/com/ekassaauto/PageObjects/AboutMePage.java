@@ -1,5 +1,6 @@
 package com.ekassaauto.PageObjects;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.CacheLookup;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.ekassaauto.Registration.*;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 /**
  * Created by user on 06.07.2017.
@@ -19,6 +21,12 @@ public class AboutMePage extends AbstractPage {
 //    private Map<String, String> dataForFillingAboutMePageMap;
     private Map<WebElement, String> dataForFillingAboutMePageMap;
 
+    private static final String loanAmountFieldLocator = "//input[@name='loanAmount']";
+    private static final String loanTenorFieldLocator = "//input[@name='loanTenor']";
+    private static final String workExpirience1ListboxLocator = "//md-select[@placeholder='Okres pracy w podanego pracodawcy']";
+
+    @FindBy(xpath = loanAmountFieldLocator) WebElement loanAmountField;
+    @FindBy(xpath = loanTenorFieldLocator) WebElement loanTenorField;
     @CacheLookup @FindBy(xpath = "//input[@name='pesel']") public WebElement peselField;
     @CacheLookup @FindBy(xpath = "//input[@name='socialNumber']") public WebElement socialNumberField;
     @CacheLookup @FindBy(xpath = "//input[@name='account']") public WebElement bankAccountField;
@@ -38,7 +46,7 @@ public class AboutMePage extends AbstractPage {
     @CacheLookup @FindBy(xpath = "//input[@name='building']") public WebElement livBuildingField;
     @CacheLookup @FindBy(xpath = "//input[@name='flat']") public WebElement livApartmentField;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Zatrudnienia']") public WebElement empType1Listbox;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Okres pracy w podanego pracodawcy']") public WebElement workExpirience1Listbox;
+    @CacheLookup @FindBy(xpath = workExpirience1ListboxLocator) public WebElement workExpirience1Listbox;
     @CacheLookup @FindBy(xpath = "//input[@ng-model='job.income']") public WebElement netIncome1Field;
     @CacheLookup @FindBy(xpath = "//input[@ng-model='job.employer']") public WebElement empName1Field;
     @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Województwo firmy']") public WebElement empRegion1Listbox;
@@ -53,7 +61,7 @@ public class AboutMePage extends AbstractPage {
     }
 
     private void initPageElements() {
-        aboutMeForm = new Form(findWithXPath("//form[@name='$ctrl.form.workForm']"));
+        aboutMeForm = new Form(findWithXPath("//form[@name='$ctrl.form.aboutMeForm']"));
         dataForFillingAboutMePageMap = new HashMap<>();
     }
 
@@ -69,41 +77,28 @@ public class AboutMePage extends AbstractPage {
         return this;
     }
 
-    public PdlOfferPage submitPrefilledAboutMePageAfterFillindAcceptedRequiredData() {
+    public PdlOfferPage passPrefilledAboutMePageGottenFromMyProfile() {
         aboutMeForm.set(currentDebtField, currentDebt)
-                .selectFromListBoxByValue(contactPersonListbox, ContactPersons.WifeOrHusband.getValue())
-                .set(contactPersonPhoneField, contactPersonPhone)
+//                .selectFromListBoxByValue(contactPersonListbox, ContactPersons.WifeOrHusband.getValue())
+//                .set(contactPersonPhoneField, contactPersonPhone)
+                .set(loanAmountField, "2000")
+                .set(loanTenorField, "12")
+                .submit(submitButton);
+        waitForAngularRequestsToFinish();
+        return new PdlOfferPage(driver);
+    }
+    public PdlOfferPage passPrefilledAboutMePageGottenFromMainPage() {
+        aboutMeForm.set(currentDebtField, currentDebt)
+//                .selectFromListBoxByValue(contactPersonListbox, ContactPersons.WifeOrHusband.getValue())
+//                .set(contactPersonPhoneField, contactPersonPhone)
                 .submit(submitButton);
         waitForAngularRequestsToFinish();
         return new PdlOfferPage(driver);
     }
 
     public PdlOfferPage submitAboutMePageWithBasicAcceptableData() {
-            aboutMeForm.checkedSetWithPuttingToMap(peselField, pesel, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(socialNumberField, socialNumber, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(bankAccountField, bankAccount, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(emailField, email, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(maritalStatusListbox, MaritalStatuses.Married.getValue(), dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(dependentsQuantityListbox, DependentsQuantities.None.getValue(), dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(educationListbox, Education.SecondaryEducation.getValue(), dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(occupationTypeListbox, OccupationTypes.ItSpecialist.getValue(), dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(currentDebtField, currentDebt, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(contactPersonListbox, ContactPersons.WifeOrHusband.getValue(), dataForFillingAboutMePageMap)
-                    .checkedSetToPhoneFieldWithPuttingToMap(contactPersonPhoneField, contactPersonPhone, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(propertyOwnListbox, PropertyOwn.HomeOwner.getValue(), dataForFillingAboutMePageMap)
-                    .checkedSetToPostalCodeFieldWithPuttingToMap(postalCodeField, postalCode, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(livRegionListbox, Regions.PodkarpackieWojewództwo.getValue(), dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(livCityField, testString, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(livStreetField, testString, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(livBuildingField, testString, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(livApartmentField, testString, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(empType1Listbox, EmploymentTypes.FullTimeEmployed.getValue(), dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(workExpirience1Listbox, TermsOfWorkExperience.From1To2Years.getValue(), dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(empName1Field, testString, dataForFillingAboutMePageMap)
-                    .checkedSetToPhoneFieldWithPuttingToMap(empPhone1Field, empPhone1, dataForFillingAboutMePageMap)
-                    .checkedSetWithPuttingToMap(netIncome1Field, netIncome1, dataForFillingAboutMePageMap)
-                    .selectFromListBoxByValueWithPuttingToMap(empRegion1Listbox, Regions.PodkarpackieWojewództwo.getValue(), dataForFillingAboutMePageMap)
-                    .submit(submitButton);
+        fillInitiallyBlankAboutMePageWithAcceptableData();
+        aboutMeForm.submit(submitButton);
         waitForAngularRequestsToFinish();
 
         return new PdlOfferPage(driver);
@@ -117,7 +112,7 @@ public class AboutMePage extends AbstractPage {
     }
 
     public AboutMePage fillInitiallyBlankAboutMePageWithAcceptableData() {
-        aboutMeForm.checkedSetWithPuttingToMap(peselField, pesel, dataForFillingAboutMePageMap)
+        checkedSetWithPuttingToMap(peselField, pesel, dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(socialNumberField, socialNumber, dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(bankAccountField, bankAccount, dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(emailField, email, dataForFillingAboutMePageMap)
@@ -126,8 +121,8 @@ public class AboutMePage extends AbstractPage {
                 .selectFromListBoxByValueWithPuttingToMap(educationListbox, Education.SecondaryEducation.getValue(), dataForFillingAboutMePageMap)
                 .selectFromListBoxByValueWithPuttingToMap(occupationTypeListbox, OccupationTypes.ItSpecialist.getValue(), dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(currentDebtField, currentDebt, dataForFillingAboutMePageMap)
-                .selectFromListBoxByValueWithPuttingToMap(contactPersonListbox, ContactPersons.WifeOrHusband.getValue(), dataForFillingAboutMePageMap)
-                .checkedSetToPhoneFieldWithPuttingToMap(contactPersonPhoneField, contactPersonPhone, dataForFillingAboutMePageMap)
+//                .selectFromListBoxByValueWithPuttingToMap(contactPersonListbox, ContactPersons.WifeOrHusband.getValue(), dataForFillingAboutMePageMap)
+//                .checkedSetToPhoneFieldWithPuttingToMap(contactPersonPhoneField, contactPersonPhone, dataForFillingAboutMePageMap)
                 .selectFromListBoxByValueWithPuttingToMap(propertyOwnListbox, PropertyOwn.HomeOwner.getValue(), dataForFillingAboutMePageMap)
                 .checkedSetToPostalCodeFieldWithPuttingToMap(postalCodeField, postalCode, dataForFillingAboutMePageMap)
                 .selectFromListBoxByValueWithPuttingToMap(livRegionListbox, Regions.PodkarpackieWojewództwo.getValue(), dataForFillingAboutMePageMap)
@@ -135,20 +130,16 @@ public class AboutMePage extends AbstractPage {
                 .checkedSetWithPuttingToMap(livStreetField, testString, dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(livBuildingField, testString, dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(livApartmentField, testString, dataForFillingAboutMePageMap)
-                .selectFromListBoxByValueWithPuttingToMap(empType1Listbox, EmploymentTypes.FullTimeEmployed.getValue(), dataForFillingAboutMePageMap)
-                .selectFromListBoxByValueWithPuttingToMap(workExpirience1Listbox, TermsOfWorkExperience.From1To2Years.getValue(), dataForFillingAboutMePageMap)
+                .selectFromListBoxByValueWithPuttingToMap(empType1Listbox, EmploymentTypes.FullTimeEmployed.getValue(), dataForFillingAboutMePageMap);
+        selectFromListBoxByValueWithPuttingToMap(workExpirience1Listbox, TermsOfWorkExperience.From1To2Years.getValue(), dataForFillingAboutMePageMap);
+        checkedSetToPhoneFieldWithPuttingToMap(empPhone1Field, empPhone1, dataForFillingAboutMePageMap)
+                .selectFromListBoxByValueWithPuttingToMap(empRegion1Listbox, Regions.PodkarpackieWojewództwo.getValue(), dataForFillingAboutMePageMap)
                 .checkedSetWithPuttingToMap(empName1Field, testString, dataForFillingAboutMePageMap)
-                .checkedSetToPhoneFieldWithPuttingToMap(empPhone1Field, empPhone1, dataForFillingAboutMePageMap)
-                .checkedSetWithPuttingToMap(netIncome1Field, netIncome1, dataForFillingAboutMePageMap)
-                .selectFromListBoxByValueWithPuttingToMap(empRegion1Listbox, Regions.PodkarpackieWojewództwo.getValue(), dataForFillingAboutMePageMap);
+                .checkedSetWithPuttingToMap(netIncome1Field, netIncome1, dataForFillingAboutMePageMap);
         return this;
     }
 
-    public void cleanInstWormCache(String name, String pesel, String lastName, String bankAccount) throws SQLException {
-        if (instWormCacheDAO.instWormCacheForPdlPresent(name, pesel, lastName, bankAccount)) {
-            instWormCacheDAO.deleteInstWormCache(name, pesel, lastName, bankAccount);
-        }
-    }
+
 
 //    public enum InputsAtTheAboutMePage {
 //        PeselField("PeselField");

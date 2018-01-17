@@ -27,18 +27,16 @@ public class UserCredentialsDAO {
         return userCredential.getPlainUserEntity().getMarketingDistribution();
     }
 
-    public List<UserCredential> getUserByPhone(String phone) throws SQLException {
-        Query query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone =:phone");
+    public List<UserCredential> getUserByPhone(String phone) {
+        TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone = :phone",
+                UserCredential.class);
         query.setParameter("phone", phone);
         return query.getResultList();
     }
 
-    public void deleteUserByPhone(String regPhone) {
+    public void deleteUserByPhone(String phone) {
         entityManager.getTransaction().begin();
-        TypedQuery<UserCredential> query = entityManager.createQuery("SELECT user FROM UserCredential user where user.phone = :regPhone",
-                UserCredential.class);
-        query.setParameter("regPhone", regPhone);
-        List<UserCredential> userCredentialList = query.getResultList();
+        List<UserCredential> userCredentialList = getUserByPhone(phone);
 //        ScheduleEntity scheduleEntity = entityManager.createQuery("select s from ScheduleEntity s where s.id = 782607", ScheduleEntity.class).getSingleResult();
 //        entityManager.remove(scheduleEntity);
 //
@@ -60,11 +58,12 @@ public class UserCredentialsDAO {
 
     public void deleteUserByEmail(String email) {
         entityManager.getTransaction().begin();
-        Query query = entityManager.createQuery("select uc from UserCredential uc inner join uc.plainUserEntity pue where pue.email = :email",
-                UserCredential.class);
-        query.setParameter("email", email);
-        List<UserCredential> resultList = query.getResultList();
+        List<UserCredential> resultList = getUserByEmail(email);
         resultList.forEach(entityManager::remove);
         entityManager.getTransaction().commit();
+    }
+
+    public boolean getStateOfFirstTimeEnteredByPhone(String phone) {
+        return getUserByPhone(phone).get(0).getPlainUserEntity().getFirstTimeEntered();
     }
 }

@@ -27,5 +27,6 @@
   "maritalStatus":"Single",
   "empRegion": "Świętokrzyskie Województwo",
   "empPhone1": "555555555",
-  "livRegion": "Małopolskie Województwo"
+  "livRegion": "Małopolskie Województwo",
+  "agreedToMarketingDistribution": "false"
 }

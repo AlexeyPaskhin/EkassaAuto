@@ -10,7 +10,8 @@ import java.util.List;
 @Table(name = "super_deal")
 public class SuperDealEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="id", unique=true, nullable=false)
     private Long id;
     @Column(name = "userprofileid")
     private Long userProfileId;

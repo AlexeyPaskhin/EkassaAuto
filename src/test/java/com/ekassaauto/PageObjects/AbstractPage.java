@@ -179,7 +179,8 @@ public abstract class AbstractPage {
 
     public boolean elementIsRed(WebElement element) {
 //        System.out.println(element.getCssValue("color"));
-        return element.getCssValue("color").contains("255, 0, 0");
+        return element.getCssValue("color").contains("255, 0, 0")
+                || element.getCssValue("color").contains("221, 44, 0");
     }
 
     public void goBack() {
@@ -225,6 +226,10 @@ public abstract class AbstractPage {
     public AbstractPage waitForAngularRequestsToFinish() {
         ngWebDriver.waitForAngularRequestsToFinish();
         return this;
+    }
+
+    public void printURL() {
+        System.out.println(driver.getCurrentUrl());
     }
 
     public PdlOfferPage goToCpaProcessWithAutoLogin(Long id) {

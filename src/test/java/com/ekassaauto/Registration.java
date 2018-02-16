@@ -23,7 +23,7 @@ import static org.testng.Assert.*;
 @Test
 public class Registration {
     protected WebDriver driver;
-    public static String regPhone = "222222219", name = "Alex", lastName = "Paskhin", pesel = "57110181345",
+    public static String regPhone = "222222220", name = "Alex", lastName = "Paskhin", pesel = "57110181345",
             email = "tramo-doll@bigmir.net", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
             bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
             testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", netIncome1 = "3800", empPhone1 = "987654321", instantorTestNik = "fake60!";
@@ -95,11 +95,11 @@ public class Registration {
         mainPage.switchToConsolidation();
         mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationTrancheInput);
-        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertFalse(driver.getCurrentUrl().contains("employment"), "Submitting with the 'Enter' key was successful!");
 
-        mainPage.markSmallPDLCheckbox()
+        mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationPaymentInput);
-        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertFalse(driver.getCurrentUrl().contains("employment"), "Submitting with the 'Enter' key was successful!");
     }
 
     @Test(priority = 15, dependsOnMethods = "registrationThroughConsForm")
@@ -112,7 +112,7 @@ public class Registration {
         assertEquals(mainPage.goToNextTaskConsolidationButton.getText(), "KOLEJNY KROK");
     }
 
-    @Test(priority = 14)
+    @Test(priority = 14, dependsOnMethods = "successfulSubmittingConsolidationForm")
     public void registrationThroughConsForm() throws SQLException {
         aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         aboutMePage.cleanInstWormCache(name, pesel, lastName, bankAccount);  //in order to not to receive -220050 decline due to absence of bik credits
@@ -178,7 +178,8 @@ public class Registration {
 
     @Test(priority = 13)
     public void successfulSubmittingConsolidationForm() {
-        authPage = mainPage.passConsolidationFormInUnauthorizedState();
+        mainPage.logOut();
+        authPage = mainPage.passConsolidationForm();
         int countVisElems = 0;
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
@@ -190,7 +191,8 @@ public class Registration {
 
     @Test(priority = 12)
     public void interactionWithTheLinkConsolidationInfo() {
-        mainPage.clickConsolidationInfo();
+        mainPage.switchToConsolidation()
+                .clickConsolidationInfo();
         try {
             assertTrue(mainPage.mdDialogOfConsolidationInfo.isDisplayed(),
                     "Consolidation info isn't displayed!");
@@ -204,7 +206,8 @@ public class Registration {
 
     @Test(priority = 12)
     public void accessibilityOfAnAccessToPersDataTextInConsolidationForm() {
-        mainPage.clickTheTermsInConsolidationForm();
+        mainPage.switchToConsolidation()
+                .clickTheTermsInConsolidationForm();
         try {
             assertTrue(mainPage.mdDialogOfAccessToPersData.isDisplayed(), "Terms aren't displayed!");
             mainPage.closeDialogWindow();
@@ -216,30 +219,25 @@ public class Registration {
 
     @Test(priority = 12)
     public void uncheckedConsolidationCheckbox() {
-        mainPage.uncheckConsolidationCheckbox()
+        mainPage.switchToConsolidation()
+                .unmarkConsolidationCheckbox()
                 .submitInvalidConsolidationForm();
-        try {
-            assertTrue(mainPage.fieldWithConsolidationCheckboxIsInvalid(),
-                    "Unmarked checkbox has valid state after submitting!");
-            assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
-                    "The link to the terms near to invalid checkbox isn't highlighted with red color!");
-        } catch (NoSuchElementException ex) {
-            mainPage = new MainPage(driver).switchToConsolidation();
-            throw new AssertionError("Invalid consolidation form is submitted", ex);
-        }
+        assertFalse(driver.getCurrentUrl().contains("employment"), "Invalid consolidation form is submitted");
+        assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
+                "The link to the terms near to invalid checkbox isn't highlighted with red color!");
     }
 
     @Test(priority = 11)
     public void submitEventForEnterKeyInUnauthorizedStateAtConsolidationForm() {
         mainPage.logOut()
-                .switchToConsolidation();
-        mainPage.markConsolidationCheckbox()
+                .switchToConsolidation()
+                .markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationTrancheInput);
-        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertFalse(driver.getCurrentUrl().contains("employment"),"Submitting with the 'Enter' key was successful!");
 
-        mainPage.markSmallPDLCheckbox()
+        mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationPaymentInput);
-        assertTrue(mainPage.smallPdlAmountInput.isDisplayed(), "Submitting with the 'Enter' key was successful!");
+        assertFalse(driver.getCurrentUrl().contains("employment"),"Submitting with the 'Enter' key was successful!");
     }
 
     //здесь когда поле ввода приобретает зеленый цвет - оно становится в фокусе
@@ -275,20 +273,20 @@ public class Registration {
     public void submitEventForEnterKeyInAuthorizedStateAtPdlForm() {
         mainPage.markSmallPDLCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.smallPdlAmountInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
+        assertFalse(driver.getCurrentUrl().contains("employment"),
                 "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
 
-        mainPage.markSmallPDLCheckbox()
-                .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlTermInput);
-        assertEquals(mainPage.findElementsByXPath("//input[@ng-model='$ctrl.loan.amount']").size(), 1,
-                "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
+//        mainPage.markSmallPDLCheckbox()
+//                .submitFormWithEnterKeyThroughSpecificField(mainPage.pdlTermInput);
+//        assertFalse(driver.getCurrentUrl().contains("employment"),
+//                "Submitting with the 'Enter' key was successful!"); //checking we stayed at the main page
     }
 
     @Test(priority = 9, dependsOnMethods = "submittingRegFormWithUnmarkedConcessionToEmailsCheckbox")
     public void inscriptionInThePdlSubmitButtonAfterCreationPdlProcess() {
         mainPage = new MainPage(driver);
         mainPage.waitForAngularRequestsToFinish();
-        assertEquals(mainPage.findElementsByXPath("//*[@ng-click='$ctrl.goToNextTask(false)']").size(), 1,
+        assertEquals(mainPage.findElementsByXPath(mainPage.goToNextTaskPdlButtonLocator).size(), 1,
                 "goToNextTask Pdl Button isn't displayed after creation pdl process!");
         assertEquals(mainPage.goToNextTaskPdlButton.getText(), "KOLEJNY KROK");
     }

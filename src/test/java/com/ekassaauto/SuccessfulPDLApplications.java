@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import static com.ekassaauto.Registration.*;
@@ -103,11 +104,14 @@ public class SuccessfulPDLApplications {
 //        boDealsDAO.printId("92102107697");
         startBrowser();
         mainPage = new MainPage(driver);
-
 //        mainPage.switchToConsolidation();
 //        authPage = mainPage.startSmallPdlInUnauthorizedState();
 
+    }
 
+    @Test
+    public void createALotOfBMTransactionsWithDifferentPesel() {
+        bmOutgoingPaymentDAO.createBMTransactionsWithDifferentPesel();
     }
 
     @Test
@@ -155,7 +159,7 @@ public class SuccessfulPDLApplications {
             JSONParser parser = new JSONParser();
             JSONObject data = (JSONObject) parser.parse(new FileReader("src/test/resources/cpaInfo.json"));
             data.put("phone", regPhone);
-//            data.remove("livPostcode");
+            data.remove("empName");
 
             HttpUriRequest request = makeCpaPostRequest(data);
 
@@ -164,7 +168,7 @@ public class SuccessfulPDLApplications {
             if (response.getStatusLine().getStatusCode() == 200) {
                 JSONObject result = (JSONObject) parser.parse(IOUtils.toString(response.getEntity().getContent(), "utf-8"));
                 Long cpaId = (Long) result.get("unique_partner_id");
-                System.out.println("cpa_id: " + cpaId);
+                System.out.println("cpa_id=" + cpaId);
                 CpaShadowClientInformationsEntity newCpaClientEntity = cpaShadowClientInformationsDAO.getCpaClientById(cpaId);
 
                 assertTrue(newCpaClientEntity.isAutoLogin(), "New client cpa entry doesn't have auto login!");
@@ -172,6 +176,11 @@ public class SuccessfulPDLApplications {
                         "New cpa client will not see the offer screen immediately but will see the 'AboutMe' screen!");
                 assertTrue(newCpaClientEntity.isEnable(), "New client cpa entry isn't enabled!");
 
+                pdlOfferPage = mainPage.goToCpaProcessWithAutoLogin(cpaId);
+                bankAccountVerificationPage = pdlOfferPage.passPdlOfferPageSelectingTopUpWithoutBankCache(regPhone);
+                congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
+                congratulationPage.printURL();
+                assertTrue(congratulationPage.congratsTitle.isDisplayed());
 //                ActHistoryVariablesEntity decRes = actHistoryVariableDao.getProcessVariable(procInst, "decRes");
 //                ActHistoryVariablesEntity activePDL = actHistoryVariableDao.getProcessVariable(procInst, "activepdl");
 //                clientId.setActivePDL(activePDL.getLongValue() == 1);
@@ -209,8 +218,10 @@ public class SuccessfulPDLApplications {
         System.out.println(cpaEntity.getId());
         pdlOfferPage = mainPage.goToCpaProcessWithAutoLogin(cpaEntity.getId());
         congratulationPage = pdlOfferPage.passPdlOfferPageSelectingTopUpWithSuccessfulBankCache(cpaEntity.getPhone());
+        congratulationPage.printURL();
         assertTrue(congratulationPage.congratsTitle.isDisplayed());
     }
+
 
     @AfterTest
     public void teardown() {

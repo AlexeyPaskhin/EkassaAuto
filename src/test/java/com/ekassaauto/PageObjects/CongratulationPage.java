@@ -2,6 +2,7 @@ package com.ekassaauto.PageObjects;
 
 import com.ekassaauto.PageObjects.AbstractPage;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -19,7 +20,11 @@ public class CongratulationPage extends AbstractPage {
     public CongratulationPage(WebDriver driver) {
         super(driver);
         exitFromAFrame(); //на случай прохождения инстантора, выход с его фрейма
-        waitForCongratsPage();
+        try {
+            waitForCongratsPage();
+        } catch (TimeoutException e) {
+            System.out.println("The congrats page was loading longer than 30 seconds!");
+        }
     }
 
     public void waitForCongratsPage() {

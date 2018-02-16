@@ -1,12 +1,10 @@
 package com.ekassaauto.database.dao.aui;
 
-import com.ekassaauto.database.entities.aui.ScheduleEntity;
 import com.ekassaauto.database.entities.aui.UserCredential;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import java.sql.*;
 import java.util.List;
 
 /**
@@ -43,6 +41,10 @@ public class UserCredentialsDAO {
 //        entityManager.getTransaction().commit();
 //        ScheduleEntity scheduleEntity = userCredentialList.get(0).getPlainUserEntity().getSuperDealEntities().get(0).getDealEntities().get(1).getScheduleEntities().get(0);
 //        entityManager.remove(scheduleEntity);
+        userCredentialList
+                .stream()
+                .flatMap(userCredential -> userCredential.getScoringEntities().stream())
+                .forEach(scoringEntity -> entityManager.remove(scoringEntity));
         userCredentialList.forEach(userCredential -> entityManager.remove(userCredential));
 //        System.out.println(userCredential);
         entityManager.getTransaction().commit();

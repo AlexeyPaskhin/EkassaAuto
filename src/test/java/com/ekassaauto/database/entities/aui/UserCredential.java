@@ -1,6 +1,7 @@
 package com.ekassaauto.database.entities.aui;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Created by user on 15.06.2017.
@@ -17,6 +18,10 @@ public class UserCredential {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "plain_user_id",nullable = false)
     private PlainUserEntity plainUserEntity;
+
+    @OneToMany(mappedBy = "userCredentials")
+//    @JoinColumn(name = "id")
+    private List<ScoringEntity> scoringEntities;
 
 
     public Long getId() {
@@ -50,6 +55,14 @@ public class UserCredential {
 
     public void setPlainUserEntity(PlainUserEntity plainUserEntity) {
         this.plainUserEntity = plainUserEntity;
+    }
+
+    public List<ScoringEntity> getScoringEntities() {
+        return scoringEntities;
+    }
+
+    public void setScoringEntities(List<ScoringEntity> scoringEntities) {
+        this.scoringEntities = scoringEntities;
     }
 
     @Override

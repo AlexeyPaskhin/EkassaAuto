@@ -16,26 +16,32 @@ public class MainPage extends AbstractPage {
     private Form pdlMainForm;
     private Form consolidationMainForm;
 
-    public static final String goToNextTaskConsolidationButtonLocator = "//*[@ng-click='$ctrl.goToNextTask(true)']";
+    public static final String goToNextTaskConsolidationButtonLocator = "//*[@ng-click='vm.goToNextTask(true)']";
+    public static final String goToNextTaskPdlButtonLocator = "//*[@ng-click='vm.goToNextTask(false)']";
     public static final String startSmallPdlProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[1]";
     public static final String startLargePdlProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[2]";
     public static final String startConsProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[3]";
     public static final String smallPdlAgreementsCheckboxLocator = "//label[@for='agreed1']";
     public static final String largePdlAgreementsCheckboxLocator = "//label[@for='agreed2']";
+    public static final String consolidationRegCheckboxLocator = "//label[@for='agreed3']";
     public static final String termsLinkInSmallPDLLocator = "(//*[@ng-click='vm.showAgreements($event)'])[1]";
     public static final String termsLinkInLargePDLLocator = "(//*[@ng-click='vm.showAgreements($event)'])[2]";
+    public static final String termsLinkInConsolidationLocator= "(//a[@ng-click='vm.showAgreements($event)'])[3]";
     public static final String mdDialogOfAccessToPersDataLocator = "//md-dialog[@aria-label='Potwierdzam, że ...']";
     public static final String largePdlTabLocator = "//div[@ng-click='vm.enableProduct(vm.secondProduct);']";
     public static final String smallPdlTabLocator = "//div[@ng-click='vm.enableProduct(vm.firstProduct)']";
     public static final String consolidationTabLocator = "//div[@ng-click='vm.enableProduct(vm.thirdProduct)']";
     public static final String linkSmallLoanInfoLocator = "//*[@ng-click='vm.chooseApplication($event, vm.firstProduct)']";
     public static final String linkLargeLoanInfoLocator = "//*[@ng-click='vm.chooseApplication($event, vm.secondProduct)']";
+    public static final String linkConsolidationInfoLocator = "//a[@ng-click='vm.chooseApplication($event, vm.thirdProduct)']";
 
     public static final String mdDialogOfSmallLoanInfoLocator = "//md-dialog[@aria-label='Niewielka suma ...']";
     public static final String mdDialogOfLargeLoanInfoLocator = "//*[@id='choosesSecondProductWithTopup']/md-dialog[@aria-label='Większa kwota ...']";
     public static final String mdDialogOfConsolidationInfoLocator = "//*[@id='choosesThirdProductWithoutTopup']/md-dialog[@aria-label='Większa kwota ...']";
     public static final String smallPdlAmountInputLocator = "//input[@ng-model='vm.firstProduct.amount']";
     public static final String largePdlAmountInputLocator = "//input[@ng-model='vm.secondProduct.amount']";
+    public static final String consolidationTrancheInputLocator = "//input[@ng-model='vm.thirdProduct.totalPaymentRequested']";
+    public static final String consolidationPaymentInputLocator = "//input[@ng-model='vm.thirdProduct.amount']";
 
     @FindBy(xpath = largePdlTabLocator) public WebElement largePdlTab;
     @FindBy(xpath = smallPdlTabLocator) public WebElement smallPdlTab;
@@ -44,8 +50,7 @@ public class MainPage extends AbstractPage {
     @FindBy(xpath = startSmallPdlProcessButtonLocator) public WebElement startSmallPdlProcessButton;
     @FindBy(xpath = startLargePdlProcessButtonLocator) public WebElement startLargePdlProcessButton;
     @FindBy(xpath = startConsProcessButtonLocator) public WebElement startConsProcessButton;
-    @FindBy(xpath = "//*[@ng-click='$ctrl.goToNextTask(false)']")
-    public WebElement goToNextTaskPdlButton;
+    @FindBy(xpath = goToNextTaskPdlButtonLocator) public WebElement goToNextTaskPdlButton;
     @FindBy(xpath = goToNextTaskConsolidationButtonLocator) public WebElement goToNextTaskConsolidationButton;
     @FindBy(xpath = mdDialogOfAccessToPersDataLocator) public WebElement mdDialogOfAccessToPersData;
     @CacheLookup
@@ -57,19 +62,19 @@ public class MainPage extends AbstractPage {
     @FindBy(xpath = smallPdlAgreementsCheckboxLocator) private WebElement smallPdlAgreementsCheckbox;
     @FindBy(xpath = largePdlAgreementsCheckboxLocator)
     public WebElement largePdlAgreementsCheckbox;
-    @FindBy(xpath = "(//md-checkbox[@name='agreedToConditions'])[2]") private WebElement consolidationRegCheckbox;
+    @FindBy(xpath = consolidationRegCheckboxLocator) private WebElement consolidationRegCheckbox;
     @FindBy(xpath = termsLinkInSmallPDLLocator) public WebElement termsLinkInSmallPDL;
     @FindBy(xpath = termsLinkInLargePDLLocator) public WebElement termsLinkInLargePDL;
-    @FindBy(xpath = "(//span[@ng-click='$ctrl.showAgreements($event)'])[2]") public WebElement termsLinkInConsolidation;
+    @FindBy(xpath = termsLinkInConsolidationLocator) public WebElement termsLinkInConsolidation;
     @FindBy(xpath = linkSmallLoanInfoLocator) private WebElement linkSmallLoanInfo;
     @FindBy(xpath = linkLargeLoanInfoLocator) private WebElement linkLargeLoanInfo;
-    @FindBy(xpath = "//div[@ng-click='$ctrl.showConsolidationInfo($event)']") private WebElement linkConsolidationInfo;
+    @FindBy(xpath = linkConsolidationInfoLocator) private WebElement linkConsolidationInfo;
     @FindBy(xpath = "//span[text()='Pożyczka konsolidacyjna']") WebElement consolidationOverlay;
     @FindBy(xpath = smallPdlAmountInputLocator) public WebElement smallPdlAmountInput;
     @FindBy(xpath = largePdlAmountInputLocator) public WebElement largePdlAmountInput;
     @FindBy(xpath = "//input[@ng-model='$ctrl.loan.term']") public WebElement pdlTermInput;
-    @FindBy(xpath = "//input[@ng-model='$ctrl.consolidation.totalPaymentRequested']") public WebElement consolidationTrancheInput;
-    @FindBy(xpath = "//input[@ng-model='$ctrl.consolidation.amount']") public WebElement consolidationPaymentInput;
+    @FindBy(xpath = consolidationTrancheInputLocator) public WebElement consolidationTrancheInput;
+    @FindBy(xpath = consolidationPaymentInputLocator) public WebElement consolidationPaymentInput;
 
 
     public MainPage(WebDriver driver) {
@@ -114,9 +119,10 @@ public class MainPage extends AbstractPage {
         return new AuthPage(driver);
     }
 
-    public AuthPage passConsolidationFormInUnauthorizedState() {
-        pdlMainForm.markCheckBoxWithOverlay(consolidationRegCheckbox)
-                .submit(startConsProcessButton);
+    public AuthPage passConsolidationForm() {
+        switchToConsolidation()
+                .markConsolidationCheckbox();
+        startConsProcessButton.click();
         waitForAngularRequestsToFinish();
         return new AuthPage(driver);
     }
@@ -172,39 +178,49 @@ public class MainPage extends AbstractPage {
         return new PasswordPage(driver);
     }
 
-    public MainPage markConsolidationCheckbox() {
-        consolidationMainForm.markCheckBox(consolidationRegCheckbox);
-        return this;
-    }
-
     public MainPage unmarkSmallPDLCheckbox() {
-        pdlMainForm.unmarkLabelCheckbox(smallPdlAgreementsCheckbox);
+        unmarkLabelCheckbox(smallPdlAgreementsCheckbox);
         return this;
     }
 
     public MainPage unmarkLargePDLCheckbox() {
-        pdlMainForm.unmarkLabelCheckbox(largePdlAgreementsCheckbox);
+        unmarkLabelCheckbox(largePdlAgreementsCheckbox);
         return this;
     }
 
-    public MainPage markSmallPDLCheckbox() {
-//        pdlMainForm.markLabelCheckbox(smallPdlAgreementsCheckbox);
-        if (!
+    private void markLabelCheckbox(WebElement labelCheckbox) {
+                if (!
                 findWithXPath("//input[@id='" +
-                        smallPdlAgreementsCheckbox.getAttribute("for") + "']")
+                        labelCheckbox.getAttribute("for") + "']")
                         .isSelected()) {
-            smallPdlAgreementsCheckbox.click();
+            labelCheckbox.click();
         }
+    }
+    private void unmarkLabelCheckbox(WebElement labelCheckbox) {
+                if (findWithXPath("//input[@id='" +
+                        labelCheckbox.getAttribute("for") + "']")
+                        .isSelected()) {
+            labelCheckbox.click();
+        }
+    }
+
+    public MainPage markSmallPDLCheckbox() {
+        markLabelCheckbox(smallPdlAgreementsCheckbox);
+
         return this;
     }
 
     public MainPage markLargePDLCheckbox() {
-        pdlMainForm.markLabelCheckbox(largePdlAgreementsCheckbox);
+        markLabelCheckbox(largePdlAgreementsCheckbox);
         return this;
     }
 
-    public MainPage uncheckConsolidationCheckbox() {
-        consolidationMainForm.uncheck(consolidationRegCheckbox);
+    public MainPage markConsolidationCheckbox() {
+        markLabelCheckbox(consolidationRegCheckbox);
+        return this;
+    }
+   public MainPage unmarkConsolidationCheckbox() {
+        unmarkLabelCheckbox(consolidationRegCheckbox);
         return this;
     }
 
@@ -242,8 +258,7 @@ public class MainPage extends AbstractPage {
     }
 
     public MainPage clickTheTermsInConsolidationForm() {
-        termsLinkInConsolidation.sendKeys(Keys.RETURN);     //здесь замена .click-у, потому что клик не работает всегда адекватно
-        //из-за оверлея формы дивом, и хром думает,что элементы некликабельны, хоть явное ожидание и добавлено
+        termsLinkInConsolidation.click();
         explWait.until(presenceOfElementLocated(By.xpath(mdDialogOfAccessToPersDataLocator)));
         return this;
     }
@@ -258,8 +273,8 @@ public class MainPage extends AbstractPage {
         return this;
     }
     public MainPage clickConsolidationInfo() {
-        linkConsolidationInfo.sendKeys(Keys.RETURN);
-        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Pożyczka konsolidacyjna ...']")));
+        linkConsolidationInfo.click();
+        explWait.until(presenceOfElementLocated(By.xpath("//md-dialog[@aria-label='Większa kwota ...']")));
         return this;
     }
 

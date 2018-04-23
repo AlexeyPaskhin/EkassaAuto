@@ -19,7 +19,7 @@ public class CpaShadowClientInformationsDAO {
     public void setFieldsOfCpaEntityForSuccessfulPdl(CpaShadowClientInformationsEntity entity) {
         entityManager.getTransaction().begin();
         if (!entity.isEnable()) entity.setEnable(true);
-        if (!entity.isAutoLogin()) entity.setAutoLogin(true);
+//        if (!entity.isAutoLogin()) entity.setAutoLogin(true); we select already an entry with autologin
         entityManager.getTransaction().commit();
     }
 

@@ -12,6 +12,8 @@ import static com.ekassaauto.Registration.instWormCacheDAO;
 import static com.ekassaauto.Registration.password;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -27,19 +29,26 @@ public abstract class AbstractPage {
     JavascriptExecutor jseDriver;
     Actions actions;
 
-    private static final String myProfileLinkLocator = "//*[contains(text(), 'MÓJ PROFIL')]";
+    private static final String myProfileLinkLocator = "//a[@href='#/profile' and @aria-hidden='false']";
+    private static final String logOutButtonLocator = "//a[@ng-click='logout()']";
+    private static final String confirmLogOutButtonLocator = "//button[@ng-click='dialog.hide()']";
+    private static final String loaderLocator = "//*[text()='Prosimy doczekać się następnego ekranu']";
 
     @FindBy(xpath = "//ul[@ng-controller='BreadcrumbsCtrl']") public WebElement breadcrumbs;
     @FindBy(xpath = myProfileLinkLocator) WebElement myProfileLink;
-//    @FindBy(xpath = "//div[@class='preloader ng-scope']") WebElement loader;
+    @FindBy(xpath = logOutButtonLocator) WebElement logOutButton;
+    @FindBy(xpath = confirmLogOutButtonLocator) WebElement confirmLogOutButton;
+    @FindBy(xpath = loaderLocator) WebElement loader;
     public AbstractPage (WebDriver driver) {
         this.driver = driver;
         explWait = new WebDriverWait(driver, 10);
         this.jseDriver = (JavascriptExecutor) driver;
         ngWebDriver = new NgWebDriver(jseDriver);
         actions = new Actions(driver);
-        driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
+        driver.manage().timeouts().setScriptTimeout(60, TimeUnit.SECONDS);
         PageFactory.initElements(driver, this);
+        waitForLoaderIsAbsent();
+        waitForAngularRequestsToFinish();
     }
 
     //works incorrect
@@ -178,7 +187,7 @@ public abstract class AbstractPage {
     }
 
     public boolean elementIsRed(WebElement element) {
-//        System.out.println(element.getCssValue("color"));
+        System.out.println(element.getCssValue("color"));
         return element.getCssValue("color").contains("255, 0, 0")
                 || element.getCssValue("color").contains("221, 44, 0");
     }
@@ -228,16 +237,42 @@ public abstract class AbstractPage {
         return this;
     }
 
+    public AbstractPage waitForLoaderIsAbsent() {
+        new WebDriverWait(driver, 30).until(numberOfElementsToBe(By.xpath(loaderLocator), 0));
+        return this;
+    }
+
     public void printURL() {
         System.out.println(driver.getCurrentUrl());
     }
 
-    public PdlOfferPage goToCpaProcessWithAutoLogin(Long id) {
-
-        driver.get("http://test.ekassa.com/#/?cpa_id=" + id);
-        driver.navigate().refresh();
+    public PdlOfferPage goToCpaProcessWithAutoLoginAndSkipPersonalData(Long id) {
+        driver.navigate().to("http://ekassa.pl");
+        URL url = null;
+        try {
+            url = new URL("http://test.ekassa.com/#/?cpa_id=" + id);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        driver.navigate().to(url);
+//        driver.navigate().refresh();
         waitForAngularRequestsToFinish();
         return new PdlOfferPage(driver);
+    }
+    public AboutMePage goToCpaProcessWithAutoLoginWithoutSkipPersonalData(Long cpaId) {
+        driver.navigate().to("http://google.com");
+        driver.navigate().to("http://test.ekassa.com/#/?cpa_id=" + cpaId);
+//        driver.get("http://test.ekassa.com/#/?cpa_id=" + cpaId);
+//        driver.navigate().refresh();
+        waitForAngularRequestsToFinish();
+        return new AboutMePage(driver);
+    }
+
+    public AuthPage goToCpaProcessWithoutAutoLogin(Long cpaId) {
+        driver.navigate().to("http://google.com.ua");
+        driver.navigate().to("http://test.ekassa.com/#/?cpa_id=" + cpaId);
+        waitForAngularRequestsToFinish();
+        return new AuthPage(driver);
     }
 
     public AbstractPage submitFormWithEnterKeyThroughSpecificField(WebElement field) {
@@ -255,19 +290,34 @@ public abstract class AbstractPage {
     public Boolean oneElementIsPresentAtAPage(String xPathLocator) {
         return findElementsByXPath(xPathLocator).size() == 1;
     }
-    public Boolean elementsArePresentAtAPage(String xPathLocator) {
-        return findElementsByXPath(xPathLocator).size() > 1;
+    public Boolean oneOrMoreElementsArePresentAtAPage(String xPathLocator) {
+        return findElementsByXPath(xPathLocator).size() >= 1;
     }
     public Boolean elementIsAbsentAtAPage(String xPathLocator) {
         return findElementsByXPath(xPathLocator).size() == 0;
     }
 
     public MainPage logOut() {
-        if (elementsArePresentAtAPage(myProfileLinkLocator) && myProfileLink.isDisplayed()) {
-            return goToMyProfileHidingNewPassPopUp()  //in case we enter first time to personal account
-                    .clickOnLogOutButton();
+        new MainPage(driver);
+        waitForAngularRequestsToFinish();
+        if (oneOrMoreElementsArePresentAtAPage(myProfileLinkLocator) && myProfileLink.isDisplayed()) {
+            clickOnLogOutButton();
+            return confirmLogOut();
+                    /*goToMyProfileHidingNewPassPopUp()  //in case we enter first time to personal account
+                    .clickOnLogOutButton();*/
         }
         else return new MainPage(driver);
+    }
+
+    public void clickOnLogOutButton() {
+        logOutButton.click();
+//        waitForAngularRequestsToFinish();
+    }
+
+    private MainPage confirmLogOut() {
+        confirmLogOutButton.click();
+        waitForAngularRequestsToFinish();
+        return new MainPage(driver);
     }
 
     public AboutMePage startNewPdlProcessViaMyProfile() {

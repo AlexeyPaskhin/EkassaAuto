@@ -22,9 +22,11 @@ public class ScoringEntity {
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @JoinColumn(name = "userCredentials_id")
     private UserCredential userCredentials;
-    @ManyToOne()
+
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "inst_worm_cache_id")
     private InstWormCacheEntity instWurmCache;
+
     @Column(name = "app_new_score")
     private Integer scoreAppNew;
     @Column(name = "app_exist_score")

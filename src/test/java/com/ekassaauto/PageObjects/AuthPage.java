@@ -18,6 +18,8 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 public class AuthPage extends AbstractPage {
     private Form authForm;
 
+    private static final String smsCodeInputLocator = "//input[@name='smsVerificationCode']";
+
     @FindBy(xpath = "//input[@name='name']")
     public WebElement nameField;
     @FindBy(xpath = "//input[@name='lastName']")
@@ -31,14 +33,14 @@ public class AuthPage extends AbstractPage {
     public WebElement passwordField;
     @FindBy(xpath = "//input[@name='passwordConfirm']")
     public WebElement passConfirmField;
-    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']")
-    public WebElement termsCheckBox;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") public WebElement termsCheckBox;
     @FindBy(xpath = "//button[@type='submit']") WebElement authForwardButton;
     @FindBy(xpath = "//span[@ng-click='$ctrl.showAgreements($event)']")
     public WebElement linkRegTerms;
     @FindBy(xpath = "//md-checkbox[@name='agreedToMarketingDistribution']")
     public WebElement marketingCheckbox;
     @FindBy(xpath = "//span[@ng-click='$ctrl.showMarketingAgreements($event)']") WebElement linkMarketingTerms;
+    @FindBy(xpath = smsCodeInputLocator) WebElement smsCodeField;
 
     public AuthPage(WebDriver driver) {
         super(driver);
@@ -49,6 +51,10 @@ public class AuthPage extends AbstractPage {
         authForm = new Form(findWithXPath("//form"));
     }
 
+    public AuthPage inputToSmsCodeField(String code) {
+        authForm.set(smsCodeField, code);
+        return this;
+    }
 
     public String getValueFromPDLPhoneInput() {
         return authForm.getFieldValue(phoneField);
@@ -126,7 +132,7 @@ public class AuthPage extends AbstractPage {
         return this;
     }
 
-    public AuthPage markAuthCheckbox() {
+    public AuthPage markTermsCheckbox() {
         authForm.markCheckBox(termsCheckBox);
         return this;
     }
@@ -156,17 +162,17 @@ public class AuthPage extends AbstractPage {
 //            findWithXPath("(//div[@class='auth__overlay'])[2]").click();
 //        }
         fillAuthFormForRegistrationWithValidData()
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .submitValidRegForm()
                 .waitForAngularRequestsToFinish();
         return new AboutMePage(driver);
     }
 
-    public void waitForReaction() throws InterruptedException {
-        Thread.sleep(1000);
-        explWait.until(or(elementToBeClickable(authForwardButton),
-                elementToBeClickable(By.xpath("//input[@name='smsVerificationCode']"))));
-    }
+//    public void waitForReaction() throws InterruptedException {
+//        Thread.sleep(1000);
+//        explWait.until(or(elementToBeClickable(authForwardButton),
+//                elementToBeClickable(By.xpath("//input[@name='smsVerificationCode']"))));
+//    }
 
     public AuthPage clickRegTerms() {
         linkRegTerms.click();

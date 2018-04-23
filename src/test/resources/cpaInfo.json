@@ -15,11 +15,11 @@
   "email":"a.paskhin@onet.pl",
   "existPmt": "300",
   "netIncome1": 3800,
-  "empType1": "Full Time Employed",
+  "empType1": "Student",
   "workExperience1": 132,
   "firstName":"Alex",
   "lastName":"Paskhin",
-  "pesel":"57110181345",
+  "pesel":"83010138862",
   "occupationType": "IT specialist / expert",
   "socialNumber":"ALX814300",
   "propertyOwn":"Home Owner",
@@ -28,5 +28,7 @@
   "empRegion": "Świętokrzyskie Województwo",
   "empPhone1": "555555555",
   "livRegion": "Małopolskie Województwo",
-  "agreedToMarketingDistribution": "false"
+  "agreedToMarketingDistribution": "false",
+  "contactPerson": "kek",
+  "contactPersonPhone": "111111119"
 }

@@ -53,4 +53,30 @@ public class DataProviders {
                 {"123"}
         };
     }
+
+    @DataProvider
+    private static Object[][] requiredFieldsForCpa() {
+        return new Object[][]{
+                {"amountRequested", AboutMePage.loanAmountFieldLocator},
+                {"tenorRequested", AboutMePage.loanTenorFieldLocator},
+                {"firstName", AboutMePage.firstNameFieldLocator},
+                {"lastName", AboutMePage.lastNameFieldLocator},
+                {"pesel", AboutMePage.peselFieldLocator},
+                {"socialNumber", AboutMePage.socialNumberFieldLocator},
+                {"maritalStatus", AboutMePage.maritalStatusListboxLocator},
+                {"education", AboutMePage.educationListboxLocator},
+                {"email", AboutMePage.emailFieldLocator},
+                {"propertyOwn", AboutMePage.propertyOwnListboxLocator},
+                {"empType1", AboutMePage.empType1ListboxLocator},
+                {"netIncome1", AboutMePage.netIncome1FieldLocator},
+                {"existPmt", AboutMePage.currentDebtFieldLocator},
+                {"workExperience1", AboutMePage.workExperience1ListboxLocator},
+                {"accountNumber", AboutMePage.bankAccountFieldLocator},
+                {"livPostcode", AboutMePage.postalCodeFieldLocator},
+                {"livCity", AboutMePage.livCityFieldLocator},
+                {"livStreet", AboutMePage.livStreetFieldLocator},
+                {"livBuilding", AboutMePage.livBuildingFieldLocator},
+        };
+    }
+
 }

@@ -13,6 +13,7 @@ import javax.persistence.*;
                 query = "select cscie from CpaShadowClientInformationsEntity cscie, UserCredential user where cscie.phone=user.phone and cscie.riskPolicyReject=false" +
                         " and cscie.skipPersonalData=true" +
                         " and cscie.activePdl=false" +
+                        " and cscie.autoLogin = true" +
                         " order by cscie.id desc "
         )  ,
         @NamedQuery(

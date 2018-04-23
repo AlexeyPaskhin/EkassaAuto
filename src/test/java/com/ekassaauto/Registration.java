@@ -23,8 +23,8 @@ import static org.testng.Assert.*;
 @Test
 public class Registration {
     protected WebDriver driver;
-    public static String regPhone = "222222220", name = "Alex", lastName = "Paskhin", pesel = "57110181345",
-            email = "tramo-doll@bigmir.net", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
+    public static String regPhone = "222222221", name = "Alex", lastName = "Paskhin", pesel = "83010138862",
+            email = "lubi@eth2btc.info", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
             bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
             testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", netIncome1 = "3800", empPhone1 = "987654321", instantorTestNik = "fake60!";
     private WebDriver.Options options;
@@ -92,7 +92,8 @@ public class Registration {
 
     @Test(priority = 16)
     public void submitEventForEnterKeyInAuthorizedStateAtConsolidationForm() {
-        mainPage.switchToConsolidation();
+        mainPage = new MainPage(driver)
+                .switchToConsolidation();
         mainPage.markConsolidationCheckbox()
                 .submitFormWithEnterKeyThroughSpecificField(mainPage.consolidationTrancheInput);
         assertFalse(driver.getCurrentUrl().contains("employment"), "Submitting with the 'Enter' key was successful!");
@@ -117,7 +118,7 @@ public class Registration {
         aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         aboutMePage.cleanInstWormCache(name, pesel, lastName, bankAccount);  //in order to not to receive -220050 decline due to absence of bik credits
         aboutMePage.fillInitiallyBlankAboutMePageWithAcceptableData()
-                .submitAboutMePageAtConsolProcessWithoutBankCache();
+                .submitAboutMePageWithoutBankCache();
         assertEquals(userCredentialsDAO.getUserByPhone(regPhone).size(), 1,
                 "The client isn't registered after passing aboutMe page!");
     }
@@ -176,7 +177,7 @@ public class Registration {
 //        }
 //    }
 
-    @Test(priority = 13)
+    @Test(priority = 13, dependsOnMethods = "inscriptionInTheConsolidationSubmitButtonBeforeCreationConsolidationProcess")
     public void successfulSubmittingConsolidationForm() {
         mainPage.logOut();
         authPage = mainPage.passConsolidationForm();
@@ -184,6 +185,8 @@ public class Registration {
         for (WebElement el : mainPage.findElementsByXPath("//input")) {
             if (el.isDisplayed()) countVisElems++;
         }
+        assertTrue(driver.getCurrentUrl().contains("/#/auth/"), "The auth page isn't loaded after " +
+                "consolidation process was started without authorization!");
         assertEquals(countVisElems, 3, "Not each input element is displayed!");
         assertEquals(authPage.findElementsByXPath("//ul[@ng-controller='BreadcrumbsCtrl']").size(), 1,
                 "There are no breadcrumbs at the auth page!");
@@ -217,14 +220,26 @@ public class Registration {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 12, dependsOnMethods = "inscriptionInTheConsolidationSubmitButtonBeforeCreationConsolidationProcess")
     public void uncheckedConsolidationCheckbox() {
         mainPage.switchToConsolidation()
                 .unmarkConsolidationCheckbox()
                 .submitInvalidConsolidationForm();
         assertFalse(driver.getCurrentUrl().contains("employment"), "Invalid consolidation form is submitted");
         assertTrue(mainPage.elementIsRed(mainPage.termsLinkInConsolidation),
-                "The link to the terms near to invalid checkbox isn't highlighted with red color!");
+                "The link to the terms near to invalid checkbox isn't highlighted with red color! It's highlighted with color: "
+         + mainPage.termsLinkInConsolidation.getCssValue("color"));
+    }
+
+    @Test(priority = 12)
+    public void inscriptionInTheConsolidationSubmitButtonBeforeCreationConsolidationProcess() {
+        mainPage = mainPage.logOut()
+                .switchToConsolidation();
+        mainPage.waitForAngularRequestsToFinish();
+        assertEquals(mainPage.findElementsByXPath(MainPage.startConsProcessButtonLocator).size(), 1,
+                "The 'start consolidation process' button isn't displayed after creation pdl process" +
+                        " and logging out instead of goToNextTask button!");
+        assertEquals(mainPage.startConsProcessButton.getText(), "DALEJ");
     }
 
     @Test(priority = 11)
@@ -303,7 +318,8 @@ public class Registration {
                         " with unmarked marketing checkbox!");
     }
 
-    @Test(priority = 7, dependsOnMethods = "passingInitiallyBlankAboutMeScreenForRegistration")
+    @Test(priority = 7, dependsOnMethods = {"passingInitiallyBlankAboutMeScreenForRegistration","successfulSubmittingAuthFormForRegistration",
+    "successfulSubmittingPdlForm"})
     public void enteringFirstTimeToPersonalAccount() {
         myProfilePage = pdlOfferPage.goToMyProfile();
         assertTrue(userCredentialsDAO.getStateOfFirstTimeEnteredByPhone(regPhone),
@@ -360,7 +376,7 @@ public class Registration {
 
     }
 
-    @Test(priority = 5)
+    @Test(priority = 5, dependsOnMethods = "successfulSubmittingAuthFormForRegistration")
     public void passingInitiallyBlankAboutMeScreenForRegistration() throws SQLException {
 //        aboutMePage.fillAboutMePageWithBasicAcceptableData();
 //        aboutMePage.getValue(aboutMePage.peselField);
@@ -372,7 +388,7 @@ public class Registration {
                 "The client isn't registered after passing aboutMe page!");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 4, dependsOnMethods = "successfulSubmittingPdlForm")
     public void successfulSubmittingAuthFormForRegistration() {
         aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         assertTrue(aboutMePage.breadcrumbs.isDisplayed(),
@@ -382,7 +398,7 @@ public class Registration {
     @Test(priority = 3)
     public void submittingBlankAuthForm() {
         authPage.setBlankValuesToAuthForm()
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .submitInvalRegForm()
                 .waitForAngularRequestsToFinish();
         WebElement[] regInputs = {authPage.nameField, authPage.lastNameField, authPage.phoneField};
@@ -519,7 +535,7 @@ public class Registration {
         authPage.inputToPhoneField("")
                 .inputToName(name)
                 .inputToLastName(lastName)
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .submitInvalRegForm()
                 .waitForAngularRequestsToFinish();
         try {
@@ -540,7 +556,7 @@ public class Registration {
         String def = authPage.getValueFromPDLPhoneInput();
         authPage.inputToName(name)
                 .inputToLastName(lastName)
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .submitInvalRegForm()
                 .waitForAngularRequestsToFinish();
         try {
@@ -561,7 +577,7 @@ public class Registration {
         assertEquals(authPage.getValueFromPDLPhoneInput(), def, "Letters are inputted to phone field!");
         authPage.inputToName(name)
                 .inputToLastName(lastName)
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .submitInvalRegForm()
                 .waitForAngularRequestsToFinish();
         try {

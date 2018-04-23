@@ -22,7 +22,7 @@ public class Password {
                 .moveFromAField(authPage.passwordField);   //этот шаг необязательный, но селениум слишком быстро проверяет цвет и приходится что то еще сделать))
         assertTrue(authPage.fieldBorderIsRed(authPage.passConfirmField));
         authPage.submitInvalRegForm()
-                .waitForReaction();
+                .waitForAngularRequestsToFinish();
         assertEquals(authPage.findElementsByXPath("//*[contains(text(), 'Hasła wprowadzone nie pasują do siebie!')]").size(),
                 1, "Error message isn't displayed!");
     }

@@ -19,7 +19,7 @@ public class ValidationOfTheAboutMeForm {
     @Test(priority = 3)
     public void registrationWithEarlierUsedEmail() {
         authPage.fillAuthFormForRegistrationWithValidData()
-                .markAuthCheckbox()
+                .markTermsCheckbox()
                 .inputToEmailField(plainUsersDAO.getRegisteredEmail())
                 .submitInvalRegForm()
                 .customWaitForPerformingJS();

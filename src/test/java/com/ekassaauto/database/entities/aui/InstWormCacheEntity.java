@@ -1,9 +1,12 @@
 package com.ekassaauto.database.entities.aui;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by user on 15.08.2017.
@@ -40,6 +43,21 @@ public class InstWormCacheEntity {
 //    private InstReportEntity instReportEntity;
     @Column(name = "account_number")
     private String accountNumber;
+
+    @OneToMany(mappedBy = "instWurmCache") //mappedBy - здесь указывается, что данный мапиинг уже прописан в связанном классе в переменной instWurmCache
+    private List<ScoringEntity> scoringEntities;
+
+    public List<ScoringEntity> getScoringEntities() {
+        return scoringEntities;
+    }
+
+    public void setScoringEntities(List<ScoringEntity> scoringEntities) {
+        this.scoringEntities = scoringEntities;
+    }
+    //    @OnDelete(action = OnDeleteAction.CASCADE)
+//    @OneToOne
+//    @JoinColumn(referencedColumnName = "inst_worm_cache_id", name="id")
+//    private ScoringEntity scoringEntity;
 
     public Long getId() {
         return id;

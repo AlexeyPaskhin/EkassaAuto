@@ -17,16 +17,18 @@ public class PdlOfferPage extends AbstractPage {
     private static final String pdlOfferSmsCodeInputLocator = "//input[@ng-model='$ctrl.sms.code']";
     private static final String moveForwardButtonLocator = "//button[@ng-disabled='!$ctrl.contractsChecked']";
 
-    @FindBy(xpath = "//md-checkbox[@aria-label='Zgadzam się z warunkami']") WebElement agreementsCheckBox;
+    @FindBy(xpath = "//md-checkbox[@aria-label='Zgadzam się z warunkami']") WebElement contractsCheckBox;
     @FindBy(xpath = "//span[contains(text(), 'Zgadzam z Warunkami')]/..") WebElement agreedWithTheTermsButton;
     @FindBy(xpath = pdlOfferSmsCodeInputLocator) WebElement pdlOfferSmsCodeInput;
     @FindBy(xpath = moveForwardButtonLocator) WebElement moveForwardButton;
     @FindBy(xpath = "//md-radio-button[@aria-label='Polecamy']") WebElement defaultProposalRadioButton;
     @FindBy(xpath = selectTopUpButtonLocator) WebElement selectTopUpButton;
+    @FindBy(xpath = "//md-checkbox[@name='agreedToConditions']") public WebElement termsCheckBox;
 
     public PdlOfferPage(WebDriver driver) {
         super(driver);
 //        initPageElements();
+        printURL();
     }
 
     private void initPageElements() {
@@ -36,7 +38,7 @@ public class PdlOfferPage extends AbstractPage {
 
     public CongratulationPage passPdlOfferPageSelectingTopUpWithSuccessfulBankCache(String phone) {
         selectTopUp()
-                .agreeWithTheTerms()
+                .agreeWithTheContracts()
                 .enterSmsCode(phone)
                 .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
@@ -46,7 +48,7 @@ public class PdlOfferPage extends AbstractPage {
 
     RejectPage passPdlOfferPageWithDefaultProposalWithFailedBankCache(String phone) {
         selectTopUp()
-                .agreeWithTheTerms()
+                .agreeWithTheContracts()
                 .enterSmsCode(phone)
                 .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
@@ -56,7 +58,17 @@ public class PdlOfferPage extends AbstractPage {
 
     public BankAccountVerificationPage passPdlOfferPageSelectingTopUpWithoutBankCache(String phone) {
         selectTopUp()
-                .agreeWithTheTerms()
+                .agreeWithTheContracts()
+                .enterSmsCode(phone)
+                .clickMoveForwardButton()
+                .waitForAngularRequestsToFinish();
+        return new BankAccountVerificationPage(driver);
+    }
+
+    public BankAccountVerificationPage passCpaPdlOfferPageSelectingTopUpWithoutBankCache(String phone) {
+        markTermsCheckbox()
+                .selectTopUp()
+                .agreeWithTheContracts()
                 .enterSmsCode(phone)
                 .clickMoveForwardButton()
                 .waitForAngularRequestsToFinish();
@@ -74,15 +86,21 @@ public class PdlOfferPage extends AbstractPage {
         return this;
     }
 
-    PdlOfferPage agreeWithTheTerms() {
+    PdlOfferPage agreeWithTheContracts() {
 
-        markCheckBox(agreementsCheckBox);
+        markCheckBox(contractsCheckBox);
         agreedWithTheTermsButton.click();
         return this;
     }
 
     PdlOfferPage selectTopUp() {
         selectTopUpButton.click();
+        return this;
+    }
+
+    public PdlOfferPage markTermsCheckbox() {
+        markCheckBox(termsCheckBox);
+//        termsCheckBox.click();
         return this;
     }
 }

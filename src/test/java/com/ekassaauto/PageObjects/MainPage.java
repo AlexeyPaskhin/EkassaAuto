@@ -18,9 +18,9 @@ public class MainPage extends AbstractPage {
 
     public static final String goToNextTaskConsolidationButtonLocator = "//*[@ng-click='vm.goToNextTask(true)']";
     public static final String goToNextTaskPdlButtonLocator = "//*[@ng-click='vm.goToNextTask(false)']";
-    public static final String startSmallPdlProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[1]";
-    public static final String startLargePdlProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[2]";
-    public static final String startConsProcessButtonLocator = "(//a[@ng-click='vm.submit()'])[3]";
+    public static final String startSmallPdlProcessButtonLocator = "//a[@ng-if='!vm.firstProduct.lastProcess || !vm.firstProduct.nextTaskEnabled']";
+    public static final String startLargePdlProcessButtonLocator = "//a[@ng-if='!vm.secondProduct.lastProcess || !vm.secondProduct.nextTaskEnabled']";
+    public static final String startConsProcessButtonLocator = "//a[@ng-if='!vm.thirdProduct.lastProcess || !vm.thirdProduct.nextTaskEnabled']";
     public static final String smallPdlAgreementsCheckboxLocator = "//label[@for='agreed1']";
     public static final String largePdlAgreementsCheckboxLocator = "//label[@for='agreed2']";
     public static final String consolidationRegCheckboxLocator = "//label[@for='agreed3']";
@@ -79,8 +79,12 @@ public class MainPage extends AbstractPage {
 
     public MainPage(WebDriver driver) {
         super(driver);
-        driver.get("http://test.ekassa.com");
-        waitForOpennessOfPDLCalc();
+        String testUrlEkassa = "http://test.ekassa.com";
+        String prodUrlEkassa = "https://ekassa.pl";
+        if (!driver.getCurrentUrl().equalsIgnoreCase("http://test.ekassa.com/#/")) {
+            driver.get(testUrlEkassa);
+        }
+//        waitForOpennessOfPDLCalc();
         if (!"Pożyczki na raty: chwilówki ratalne online - Ekassa".equals(driver.getTitle())) {
             throw new IllegalStateException("This is not the main page");
         }
@@ -105,7 +109,7 @@ public class MainPage extends AbstractPage {
     }
 
     public MainPage submitInvalidConsolidationForm() {
-        pdlMainForm.submit(startConsProcessButton);
+        startConsProcessButton.click();
         waitForAngularRequestsToFinish();
         return this;
     }
@@ -279,6 +283,7 @@ public class MainPage extends AbstractPage {
     }
 
     public MainPage switchToConsolidation() {
+        waitForAngularRequestsToFinish();
 //        if (consolidationOverlay.isDisplayed()){
 //            consolidationOverlay.click();
 //        }
@@ -310,7 +315,7 @@ public class MainPage extends AbstractPage {
     MainPage waitForOpennessOfPDLCalc() {
 //        explWait.until(invisibilityOf((findWithXPath("//*[text()='Chwilówki']"))));
         waitForAngularRequestsToFinish();
-        explWait.until(elementToBeClickable(termsLinkInSmallPDL));
+//        explWait.until(elementToBeClickable(termsLinkInSmallPDL));
 //        explWait.until(not(elementToBeClickable(By.xpath("//div[@class='first-task__calc-overlay']"))));
         return this;
     }

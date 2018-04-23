@@ -5,8 +5,12 @@
     <test name="test1">
         <!--<parameter name="minNumberOfImages" value="6" />-->
         <classes>
-            <class name="com.ekassaauto.Registration"/>
-            <!--<class name="com.ekassaauto.SuccessfulPDLApplications" />-->
+            <class name="com.ekassaauto.Registration">
+                <methods>
+                    <include name="inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent"/>
+                </methods>
+            </class>
+            <class name="com.ekassaauto.CpaTests" />
         </classes>
 
 

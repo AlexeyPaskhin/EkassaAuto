@@ -1,17 +1,14 @@
 package com.ekassaauto.PageObjects;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.CacheLookup;
 import org.openqa.selenium.support.FindBy;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.ekassaauto.Registration.*;
-import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 /**
  * Created by user on 06.07.2017.
@@ -21,43 +18,74 @@ public class AboutMePage extends AbstractPage {
 //    private Map<String, String> dataForFillingAboutMePageMap;
     private Map<WebElement, String> dataForFillingAboutMePageMap;
 
-    private static final String loanAmountFieldLocator = "//input[@name='loanAmount']";
-    private static final String loanTenorFieldLocator = "//input[@name='loanTenor']";
-    private static final String workExpirience1ListboxLocator = "//md-select[@placeholder='Okres pracy w podanego pracodawcy']";
+    public static final String loanAmountFieldLocator = "//input[@name='loanAmount']";
+    public static final String loanTenorFieldLocator = "//input[@name='loanTenor']";
+    public static final String workExperience1ListboxLocator = "//md-select[@placeholder='Okres pracy w podanego pracodawcy']";
+    public static final String firstNameFieldLocator = "//input[@name='firstName']";
+    public static final String lastNameFieldLocator = "//input[@name='lastName']";
+    public static final String peselFieldLocator = "//input[@name='pesel']";
+    public static final String socialNumberFieldLocator = "//input[@name='socialNumber']";
+    public static final String bankAccountFieldLocator = "//input[@name='account']";
+    public static final String emailFieldLocator = "//input[@name='email']";
+    public static final String maritalStatusListboxLocator = "//md-select[@placeholder='Stan cywilny']";
+    public static final String dependentsQuantityListboxLocator = "//md-select[@placeholder='Dzieci w wieku do 21 lat']";
+    public static final String educationListboxLocator = "//md-select[@placeholder='Wykształcenie']";
+    public static final String occupationTypeListboxLocator = "//md-select[@placeholder='Wykonywany zawód']";
+    public static final String currentDebtFieldLocator = "//input[@name='existPmt']";
+//    public static final String contactPersonListboxLocator = "//md-select[@placeholder='Osoba kontaktowa']";
+    public static final String propertyOwnListboxLocator = "//md-select[@placeholder='Nieruchomość, w której zamieszkujesz']";
+    public static final String postalCodeFieldLocator = "//input[@name='postalCode']";
+    public static final String livRegionListboxLocator = "//md-select[@placeholder='Województwo']";
+    public static final String livCityFieldLocator = "//input[@name='city']";
+    public static final String livStreetFieldLocator = "//input[@name='street']";
+    public static final String livBuildingFieldLocator = "//input[@name='building']";
+    public static final String livApartmentFieldLocator = "//input[@name='flat']";
+    public static final String empType1ListboxLocator = "//md-select[@placeholder='Zatrudnienia']";
+    public static final String netIncome1FieldLocator = "//input[@ng-model='job.income']";
+    public static final String empName1FieldLocator = "//input[@ng-model='job.employer']";
+    public static final String empRegion1ListboxLocator = "//md-select[@placeholder='Województwo firmy']";
+    public static final String empPhone1FieldLocator = "//input[@ng-model='job.phone']";
+    public static final String tempContrExpTime1ListboxLocator = "//md-select[@placeholder='Termin ukończenia umowy']";
+    public static final String submitButtonLocator = "//button[@type='submit']";
 
-    @FindBy(xpath = loanAmountFieldLocator) WebElement loanAmountField;
-    @FindBy(xpath = loanTenorFieldLocator) WebElement loanTenorField;
-    @CacheLookup @FindBy(xpath = "//input[@name='pesel']") public WebElement peselField;
-    @CacheLookup @FindBy(xpath = "//input[@name='socialNumber']") public WebElement socialNumberField;
-    @CacheLookup @FindBy(xpath = "//input[@name='account']") public WebElement bankAccountField;
-    @CacheLookup @FindBy(xpath = "//input[@name='email']") public WebElement emailField;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Stan cywilny']") public WebElement maritalStatusListbox;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Dzieci w wieku do 21 lat']") public WebElement dependentsQuantityListbox;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Wykształcenie']") public WebElement educationListbox;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Wykonywany zawód']") public WebElement occupationTypeListbox;
-    @CacheLookup @FindBy(xpath = "//input[@name='existPmt']") public WebElement currentDebtField;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Osoba kontaktowa']") public WebElement contactPersonListbox;
-    @CacheLookup @FindBy(xpath = "//input[@name='contactPersonPhone']") public WebElement contactPersonPhoneField;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Nieruchomość, w której zamieszkujesz']") public WebElement propertyOwnListbox;
-    @CacheLookup @FindBy(xpath = "//input[@name='postalCode']") public WebElement postalCodeField;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Województwo']") public WebElement livRegionListbox;
-    @CacheLookup @FindBy(xpath = "//input[@name='city']") public WebElement livCityField;
-    @CacheLookup @FindBy(xpath = "//input[@name='street']") public WebElement livStreetField;
-    @CacheLookup @FindBy(xpath = "//input[@name='building']") public WebElement livBuildingField;
-    @CacheLookup @FindBy(xpath = "//input[@name='flat']") public WebElement livApartmentField;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Zatrudnienia']") public WebElement empType1Listbox;
-    @CacheLookup @FindBy(xpath = workExpirience1ListboxLocator) public WebElement workExpirience1Listbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='job.income']") public WebElement netIncome1Field;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='job.employer']") public WebElement empName1Field;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Województwo firmy']") public WebElement empRegion1Listbox;
-    @CacheLookup @FindBy(xpath = "//input[@ng-model='job.phone']") public WebElement empPhone1Field;
-    @CacheLookup @FindBy(xpath = "//md-select[@placeholder='Termin ukończenia umowy']") public WebElement tempContrExpTime1Listbox;
-    @CacheLookup @FindBy(xpath = "//button[@type='submit']") private WebElement submitButton;
+    @FindBy(xpath = loanAmountFieldLocator) public WebElement loanAmountField;
+    @FindBy(xpath = loanTenorFieldLocator) public WebElement loanTenorField;
+    @FindBy(xpath = firstNameFieldLocator) public WebElement firstNameField;
+    @FindBy(xpath = lastNameFieldLocator) public WebElement lastNameField;
+    @CacheLookup @FindBy(xpath = peselFieldLocator) public WebElement peselField;
+    @CacheLookup @FindBy(xpath = socialNumberFieldLocator) public WebElement socialNumberField;
+    @CacheLookup @FindBy(xpath = bankAccountFieldLocator) public WebElement bankAccountField;
+    @CacheLookup @FindBy(xpath = emailFieldLocator) public WebElement emailField;
+    @CacheLookup @FindBy(xpath = maritalStatusListboxLocator) public WebElement maritalStatusListbox;
+    @CacheLookup @FindBy(xpath = dependentsQuantityListboxLocator) public WebElement dependentsQuantityListbox;
+    @CacheLookup @FindBy(xpath = educationListboxLocator) public WebElement educationListbox;
+    @CacheLookup @FindBy(xpath = occupationTypeListboxLocator) public WebElement occupationTypeListbox;
+    @CacheLookup @FindBy(xpath = currentDebtFieldLocator) public WebElement currentDebtField;
+//    @CacheLookup @FindBy(xpath = contactPersonListboxLocator) public WebElement contactPersonListbox;
+//    @CacheLookup @FindBy(xpath = "//input[@name='contactPersonPhone']") public WebElement contactPersonPhoneField;
+    @CacheLookup @FindBy(xpath = propertyOwnListboxLocator) public WebElement propertyOwnListbox;
+    @CacheLookup @FindBy(xpath = postalCodeFieldLocator) public WebElement postalCodeField;
+    @CacheLookup @FindBy(xpath = livRegionListboxLocator) public WebElement livRegionListbox;
+    @CacheLookup @FindBy(xpath = livCityFieldLocator) public WebElement livCityField;
+    @CacheLookup @FindBy(xpath = livStreetFieldLocator) public WebElement livStreetField;
+    @CacheLookup @FindBy(xpath = livBuildingFieldLocator) public WebElement livBuildingField;
+    @CacheLookup @FindBy(xpath = livApartmentFieldLocator) public WebElement livApartmentField;
+    @CacheLookup @FindBy(xpath = empType1ListboxLocator) public WebElement empType1Listbox;
+    @CacheLookup @FindBy(xpath = workExperience1ListboxLocator) public WebElement workExpirience1Listbox;
+    @CacheLookup @FindBy(xpath = netIncome1FieldLocator) public WebElement netIncome1Field;
+    @CacheLookup @FindBy(xpath = empName1FieldLocator) public WebElement empName1Field;
+    @CacheLookup @FindBy(xpath = empRegion1ListboxLocator) public WebElement empRegion1Listbox;
+    @CacheLookup @FindBy(xpath = empPhone1FieldLocator) public WebElement empPhone1Field;
+    @CacheLookup @FindBy(xpath = tempContrExpTime1ListboxLocator) public WebElement tempContrExpTime1Listbox;
+    @CacheLookup @FindBy(xpath = submitButtonLocator) private WebElement submitButton;
     //@CacheLookup здесь из за того что используем элементы в мапе тогда, когда страница AboutMe уже не открыта.и надо чтоб селениум не искал их
 
     public AboutMePage(WebDriver driver) {
         super(driver);
-        initPageElements();
+        if (driver.getCurrentUrl().contains("/#/employment/")) {
+            initPageElements();
+            printURL();
+        }
     }
 
     private void initPageElements() {
@@ -104,11 +132,17 @@ public class AboutMePage extends AbstractPage {
         return new PdlOfferPage(driver);
     }
 
-    public BankAccountVerificationPage submitAboutMePageAtConsolProcessWithoutBankCache() {
+    public BankAccountVerificationPage submitAboutMePageWithoutBankCache() {
         aboutMeForm.submit(submitButton);
         waitForAngularRequestsToFinish();
 
         return new BankAccountVerificationPage(driver);
+    }
+
+    public AboutMePage submitInvalidAboutMePage() {
+        submitButton.click();
+        waitForAngularRequestsToFinish();
+        return this;
     }
 
     public AboutMePage fillInitiallyBlankAboutMePageWithAcceptableData() {
@@ -166,7 +200,7 @@ public class AboutMePage extends AbstractPage {
         }
     }
 
-    enum EmploymentTypes {
+    public enum EmploymentTypes {
         FullTimeEmployed("Full Time Employed"), PartTimeEmployed("Part Time Employed"), FixedTermContract("Fixed Term Contract"),
         SelfEmployed("Self Employed"), Student("Student"), HousewifeOrman("Housewife/man"),
         MaternityLeave("Maternity leave"), Unemployed("Unemployed");

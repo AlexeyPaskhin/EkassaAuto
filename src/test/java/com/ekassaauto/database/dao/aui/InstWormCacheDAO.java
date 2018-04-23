@@ -42,10 +42,19 @@ public class InstWormCacheDAO {
     }
 
     public void deleteInstWormCache(String firstName, String pesel, String secondName, String accountNumber) throws SQLException {
-        entityManager.getTransaction().begin();
-        List<InstWormCacheEntity> instWormCacheEntityList = getInstWormCacheEntities(firstName, pesel, secondName, accountNumber);
-        instWormCacheEntityList.forEach(instWormCacheEntity -> entityManager.remove(instWormCacheEntity));
-        entityManager.getTransaction().commit();
+        if (instWormCacheForPdlPresent(firstName, pesel, secondName, accountNumber)) {
+            List<InstWormCacheEntity> instWormCacheEntities = getInstWormCacheEntities(firstName, pesel, secondName, accountNumber);
+
+            entityManager.getTransaction().begin();
+
+            instWormCacheEntities
+                    .stream()
+                    .flatMap(instWormCache -> instWormCache.getScoringEntities().stream())
+                    .forEach(scoringEntity -> entityManager.remove(scoringEntity));
+            instWormCacheEntities.forEach(instWormCache -> entityManager.remove(instWormCache));
+
+            entityManager.getTransaction().commit();
+        }
     }
 
     public boolean instWormCacheIsSuccessful(String firstName, String pesel, String secondName, String accountNumber) throws SQLException {

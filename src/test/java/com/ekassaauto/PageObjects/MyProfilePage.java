@@ -14,9 +14,9 @@ public class MyProfilePage extends AbstractPage {
     private Form personalInfoForm;
 
     public static final String newPassFieldLocator = "//input[@name='newPassword']";
+    public static final String newPdlButtonLocator = "//section[@class='container profile__user-information']//button[@ng-click='vm.restartProcess(false)']";
 
-    @FindBy(xpath = "//button[@ng-click='logout()']") WebElement logOutButton;
-    @FindBy(xpath = "//button[@ng-click='restartProcess(false)']") WebElement newPdlButton;
+    @FindBy(xpath = newPdlButtonLocator) WebElement newPdlButton;
     @FindBy(xpath = newPassFieldLocator) WebElement newPasswordField;
     @FindBy(xpath = "//input[@name='newPasswordConfirmation']") WebElement newPasswordConfirmationField;
     @FindBy(xpath = "//form[@name='setCustomPassword']//button[@type='submit']") WebElement submitNewPasswordButton;
@@ -35,10 +35,7 @@ public class MyProfilePage extends AbstractPage {
         personalInfoForm = new Form(findWithXPath("//form[@name='personalInfo']"));
     }
 
-    public MainPage clickOnLogOutButton() {
-        logOutButton.click();
-        return new MainPage(driver);
-    }
+
 
     public AboutMePage clickNewPdlButton() {
         newPdlButton.click();

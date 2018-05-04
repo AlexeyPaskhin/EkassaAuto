@@ -51,6 +51,11 @@ public class InstWormCacheDAO {
                     .stream()
                     .flatMap(instWormCache -> instWormCache.getScoringEntities().stream())
                     .forEach(scoringEntity -> entityManager.remove(scoringEntity));
+
+            instWormCacheEntities.stream()
+                    .flatMap(instWormCacheEntity -> instWormCacheEntity.getBankReportIncomeEntities().stream())
+                    .forEach(bankReportIncomeEntity -> entityManager.remove(bankReportIncomeEntity));
+
             instWormCacheEntities.forEach(instWormCache -> entityManager.remove(instWormCache));
 
             entityManager.getTransaction().commit();

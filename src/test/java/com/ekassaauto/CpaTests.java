@@ -21,6 +21,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 import org.testng.annotations.*;
 
 import javax.persistence.EntityManager;
@@ -30,6 +31,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.ekassaauto.Registration.*;
@@ -118,6 +120,42 @@ public class CpaTests {
 //        driver.get("http://facebook.com");
 //        driver.navigate().refresh();
 //    }
+
+    @Test(invocationCount = 2)
+    public void newCpaClientProcessWithMinOffer() throws ParseException, SQLException {
+        mainPage.logOut();
+        cpaClientCasheDAO.deleteAllCpaCache();
+        userCredentialsDAO.deleteUserByPhone(regPhone);
+        instWormCacheDAO.deleteInstWormCache(name, pesel, lastName, bankAccount);
+
+        try (CloseableHttpClient client = HttpClientBuilder.create().setConnectionManagerShared(true).build()) {
+
+            JSONObject data = (JSONObject) parser.parse(new FileReader("src/test/resources/cpaInfo.json"));
+            data.put("phone", regPhone); data.put("empType1", AboutMePage.EmploymentTypes.Student.getValue());
+
+            HttpUriRequest request = buildCpaPostRequest(data);
+
+            HttpResponse response = client.execute(request);
+            System.out.println("RISK POLICY CHECK RESPONSE: " + response.getStatusLine().getStatusCode());
+            if (response.getStatusLine().getStatusCode() == 200) {
+                CpaShadowClientInformationsEntity newCpaClientEntity = getCpaEntryFromRestResponse(response);
+
+                assertTrue(newCpaClientEntity.isAutoLogin(), "New client cpa entry with all required fields doesn't have auto login!");
+                assertTrue(newCpaClientEntity.isSkipPersonalData(),
+                        "New cpa client will not see the offer screen immediately but will see the 'AboutMe' screen!");
+                assertTrue(newCpaClientEntity.isEnable(), "New client cpa entry isn't enabled!");
+
+                pdlOfferPage = mainPage.goToCpaProcessWithAutoLoginAndSkipPersonalData(newCpaClientEntity.getId());
+                assertTrue(pdlOfferPage.findElementsByXPath("//article").size() == 1,  //кол-во блоков офферов == 1
+                        "Min Counter offer wasn't proposed! Or check the 'sumOfNetIncome' variable at this phone: " + regPhone);
+                bankAccountVerificationPage = pdlOfferPage.passCpaPdlOfferPageSelectingTopUpWithoutBankCache(regPhone);
+                congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
+                assertTrue(congratulationPage.congratsTitle.isDisplayed());
+            } else throw new AssertionError("Rest request was failed!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test(dataProvider = "requiredFieldsForCpa", dataProviderClass = DataProviders.class
             ,dependsOnMethods = "newCpaClientProcessWithAllRequiredFields"
@@ -224,7 +262,15 @@ public class CpaTests {
                 bankAccountVerificationPage = pdlOfferPage.passCpaPdlOfferPageSelectingTopUpWithoutBankCache(regPhone);
                 congratulationPage = bankAccountVerificationPage.successfulPassingInstantorVerification();
                 assertTrue(congratulationPage.congratsTitle.isDisplayed());
-            } else throw new AssertionError("Rest request was failed!");
+            } else {
+                JSONObject result = (JSONObject) parser.parse(IOUtils.toString(response.getEntity().getContent(), "utf-8"));
+                System.out.println(result.get("Error"));
+//                for (Map.Entry<String, String> e:
+//                     result.entrySet()) {
+//
+//                }throw new AssertionError("Rest request was failed!");
+
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

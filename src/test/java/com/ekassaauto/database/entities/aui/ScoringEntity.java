@@ -4,6 +4,9 @@ package com.ekassaauto.database.entities.aui;
  * Created by user on 16.02.2018.
  */
 import javax.persistence.*;
+
+import static javax.persistence.CascadeType.*;
+
 @Entity
 @Table(name = "scoring")
 //@NamedQueries({
@@ -19,11 +22,12 @@ public class ScoringEntity {
     private Long id;
     @Column(name = "business_key", unique = true)
     private String businessKey;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     @JoinColumn(name = "userCredentials_id")
     private UserCredential userCredentials;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {PERSIST, MERGE, REFRESH, DETACH})  //without REMOVE
     @JoinColumn(name = "inst_worm_cache_id")
     private InstWormCacheEntity instWurmCache;
 

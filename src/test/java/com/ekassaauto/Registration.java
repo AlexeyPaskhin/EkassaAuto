@@ -113,7 +113,8 @@ public class Registration {
         assertEquals(mainPage.goToNextTaskConsolidationButton.getText(), "KOLEJNY KROK");
     }
 
-    @Test(priority = 14, dependsOnMethods = "successfulSubmittingConsolidationForm")
+    @Test(priority = 14, dependsOnMethods = {"successfulSubmittingConsolidationForm"
+            , "inscriptionInTheConsolidationSubmitButtonBeforeCreationConsolidationProcess"})
     public void registrationThroughConsForm() throws SQLException {
         aboutMePage = authPage.submitAuthFormForRegistrationWithVerifiedData();
         aboutMePage.cleanInstWormCache(name, pesel, lastName, bankAccount);  //in order to not to receive -220050 decline due to absence of bik credits
@@ -432,7 +433,7 @@ public class Registration {
         authPage.waitForClosingTerms();
     }
 
-    @Test(priority = 3)
+    @Test(priority = 3, dependsOnMethods = "successfulSubmittingPdlForm")
     public void submittingRegFormWithUnmarkedTermsCheckbox() {
         authPage.fillAuthFormForRegistrationWithValidData()
                 .unmarkAuthCheckbox()

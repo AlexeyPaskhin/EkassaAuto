@@ -58,6 +58,10 @@ public class PlainUserEntity {
     @JoinColumn(name = "userprofileid")
     private List<SuperDealEntity> superDealEntities;
 
+    @OneToMany(mappedBy = "plainUserEntity")
+//    @JoinColumn(name = "id")
+    private List<EmploymentEntity> employmentEntities;
+
     public Long getId() {
         return id;
     }
@@ -272,6 +276,14 @@ public class PlainUserEntity {
 
     public void setSuperDealEntities(List<SuperDealEntity> superDealEntities) {
         this.superDealEntities = superDealEntities;
+    }
+
+    public List<EmploymentEntity> getEmploymentEntities() {
+        return employmentEntities;
+    }
+
+    public void setEmploymentEntities(List<EmploymentEntity> employmentEntities) {
+        this.employmentEntities = employmentEntities;
     }
 
     @Override

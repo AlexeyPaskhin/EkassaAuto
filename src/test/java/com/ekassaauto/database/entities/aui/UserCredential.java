@@ -3,6 +3,8 @@ package com.ekassaauto.database.entities.aui;
 import javax.persistence.*;
 import java.util.List;
 
+import static javax.persistence.CascadeType.*;
+
 /**
  * Created by user on 15.06.2017.
  */
@@ -15,7 +17,7 @@ public class UserCredential {
     private String password;
     private String phone;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = {PERSIST, MERGE, REFRESH, DETACH}, fetch = FetchType.EAGER)
     @JoinColumn(name = "plain_user_id",nullable = false)
     private PlainUserEntity plainUserEntity;
 

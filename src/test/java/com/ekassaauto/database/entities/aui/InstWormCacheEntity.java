@@ -1,5 +1,6 @@
 package com.ekassaauto.database.entities.aui;
 
+import com.ekassaauto.PageObjects.BankReportIncomeEntity;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.joda.time.DateTime;
@@ -46,6 +47,10 @@ public class InstWormCacheEntity {
 
     @OneToMany(mappedBy = "instWurmCache") //mappedBy - здесь указывается, что данный мапиинг уже прописан в связанном классе в переменной instWurmCache
     private List<ScoringEntity> scoringEntities;
+
+    @OneToMany(mappedBy = "instWormCacheEntity")
+//    @JoinColumn(name = "id")
+    private List<BankReportIncomeEntity> bankReportIncomeEntities;
 
     public List<ScoringEntity> getScoringEntities() {
         return scoringEntities;
@@ -121,5 +126,13 @@ public class InstWormCacheEntity {
 
     public void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
+    }
+
+    public List<BankReportIncomeEntity> getBankReportIncomeEntities() {
+        return bankReportIncomeEntities;
+    }
+
+    public void setBankReportIncomeEntities(List<BankReportIncomeEntity> bankReportIncomeEntities) {
+        this.bankReportIncomeEntities = bankReportIncomeEntities;
     }
 }

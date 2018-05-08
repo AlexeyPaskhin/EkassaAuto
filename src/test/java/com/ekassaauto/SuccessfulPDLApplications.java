@@ -33,7 +33,7 @@ public class SuccessfulPDLApplications {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
-    public static String chromeDriverPath = "/usr/bin/chromedriver";
+    public static String chromeDriverPath = "/usr/bin/chromedriver.exe";
 
 
     private void startBrowser() {
@@ -46,7 +46,7 @@ public class SuccessfulPDLApplications {
 //        }
 
         System.setProperty("webdriver.chrome.driver", chromeDriverPath);
-
+        System.out.println("CREATING A DRIVER!!!1");
         WebDriver driver = new ChromeDriver();
 
         options = driver.manage();

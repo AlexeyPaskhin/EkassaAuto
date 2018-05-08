@@ -48,6 +48,7 @@ public class BankAccountVerificationPage extends AbstractPage {
         instantorForm = new Form (findWithXPath("//form[@class='f1 js-bank-credentials']"));
         instantorForm.set(instantorNikInput, instantorTestNik)
                 .submit(instantorSubmitButton);
+//        explWait.until(not(frameToBeAvailableAndSwitchToIt(instantorFrame)));
         waitForAngularRequestsToFinish();
         return new CongratulationPage(driver);
     }

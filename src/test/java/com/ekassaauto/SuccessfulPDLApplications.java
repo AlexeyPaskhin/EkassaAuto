@@ -33,7 +33,7 @@ public class SuccessfulPDLApplications {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
-    public static String chromeDriverPath = "/usr/bin/chromedriver.exe";
+    public static String chromeDriverPath = "/usr/bin/chromedriver";
 
 
     private void startBrowser() {

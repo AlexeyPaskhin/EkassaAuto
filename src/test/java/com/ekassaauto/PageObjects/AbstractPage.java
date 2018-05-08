@@ -29,7 +29,7 @@ public abstract class AbstractPage {
     JavascriptExecutor jseDriver;
     Actions actions;
 
-    private static final String myProfileLinkLocator = "//a[@href='#/profile' and @aria-hidden='false']";
+    private static final String myProfileLinkLocator = "//a[@href='#/profile']";
     private static final String logOutButtonLocator = "//a[@ng-click='logout()']";
     private static final String confirmLogOutButtonLocator = "//button[@ng-click='dialog.hide()']";
     private static final String loaderLocator = "//*[text()='Prosimy doczekać się następnego ekranu']";

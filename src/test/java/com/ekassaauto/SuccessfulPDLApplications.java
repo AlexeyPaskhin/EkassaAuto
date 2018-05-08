@@ -144,7 +144,7 @@ public class SuccessfulPDLApplications {
         return gson.fromJson(new InputStreamReader(inputStream), type);
     }
 
-    @Test(priority = 18)
+    @Test(priority = 18, enabled = false)
     public void cpaPdlProcessOfRegisteredClient() {
         mainPage.logOut();
         CpaShadowClientInformationsEntity cpaEntity = cpaShadowClientInformationsDAO.getExistingCpaClientInformationsEntity();

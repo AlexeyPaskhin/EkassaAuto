@@ -8,7 +8,7 @@ http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
         <!--<exclude-unlisted-classes/>-->
         <!--<exclude-unlisted-classes>false</exclude-unlisted-classes>-->
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5678/aui" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/aui" />
             <property name="javax.persistence.jdbc.user" value="wildfly" />
             <property name="javax.persistence.jdbc.password" value="NH#y28Nh" />
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
@@ -32,7 +32,7 @@ http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
         <!--<exclude-unlisted-classes/>-->
         <!--<exclude-unlisted-classes>false</exclude-unlisted-classes>-->
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5678/risk" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/risk" />
             <property name="javax.persistence.jdbc.user" value="camel" />
             <property name="javax.persistence.jdbc.password" value="#GMbKq9yp9" />
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />

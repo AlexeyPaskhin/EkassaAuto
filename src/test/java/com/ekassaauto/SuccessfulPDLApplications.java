@@ -33,15 +33,22 @@ public class SuccessfulPDLApplications {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
+    public static String chromeDriverPath = "/usr/bin/chromedriver";
+
 
     private void startBrowser() {
         ////        if (browser.equalsIgnoreCase("chrome")) {
-        ChromeDriverManager.getInstance().setup();
-        driver = new ChromeDriver();
+//        ChromeDriverManager.getInstance().setup();
+//        driver = new ChromeDriver();
 //        } else if (browser.equalsIgnoreCase("firefox")) {
 //            FirefoxDriverManager.getInstance().setup();
 //            driver = new FirefoxDriver();
 //        }
+
+        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+
+        WebDriver driver = new ChromeDriver();
+
         options = driver.manage();
         options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);
         try {

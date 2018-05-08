@@ -23,7 +23,7 @@ import static org.testng.Assert.*;
 @Test
 public class Registration {
     protected WebDriver driver;
-    public static String regPhone = "222222221", name = "Alex", lastName = "Paskhin", pesel = "83010138862",
+    public static String regPhone = "222222218", name = "Alex", lastName = "Paskhin", pesel = "83010138862",
             email = "lubi@eth2btc.info", password = "111111a", socialNumber = "ATC339884", currentDebt = "10",
             bankAccount = "77777777777777777777777775", contactPersonPhone = "123456789", postalCode = "00000",
             testString = "shutĄąĆćĘę-ŁłŃńÓóŚśŹźŻ", netIncome1 = "3800", empPhone1 = "987654321", instantorTestNik = "fake60!";

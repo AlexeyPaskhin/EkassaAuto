@@ -70,7 +70,7 @@ public class DataProviders {
                 {"empType1", AboutMePage.empType1ListboxLocator},
                 {"netIncome1", AboutMePage.netIncome1FieldLocator},
                 {"existPmt", AboutMePage.currentDebtFieldLocator},
-                {"workExperience1", AboutMePage.workExperience1ListboxLocator},
+//                {"workExperience1", AboutMePage.workExperience1ListboxLocator},
                 {"accountNumber", AboutMePage.bankAccountFieldLocator},
                 {"livPostcode", AboutMePage.postalCodeFieldLocator},
                 {"livCity", AboutMePage.livCityFieldLocator},

@@ -23,7 +23,7 @@ public class ScoringEntity {
     @Column(name = "business_key", unique = true)
     private String businessKey;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {PERSIST, MERGE, REFRESH, DETACH})  //without REMOVE
     @JoinColumn(name = "userCredentials_id")
     private UserCredential userCredentials;
 

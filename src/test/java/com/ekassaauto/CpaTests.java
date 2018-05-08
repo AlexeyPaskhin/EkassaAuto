@@ -49,6 +49,7 @@ public class CpaTests {
     private PdlOfferPage pdlOfferPage;
     private BankAccountVerificationPage bankAccountVerificationPage;
     private CongratulationPage congratulationPage;
+    private String regPhone = "222222217";
 
     private JSONParser parser = new JSONParser();
 

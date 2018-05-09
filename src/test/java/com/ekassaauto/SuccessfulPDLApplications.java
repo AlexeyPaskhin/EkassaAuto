@@ -38,14 +38,14 @@ public class SuccessfulPDLApplications {
 
     private void startBrowser() {
         ////        if (browser.equalsIgnoreCase("chrome")) {
-//        ChromeDriverManager.getInstance().setup();
+        ChromeDriverManager.getInstance().setup();
 //        driver = new ChromeDriver();
 //        } else if (browser.equalsIgnoreCase("firefox")) {
 //            FirefoxDriverManager.getInstance().setup();
 //            driver = new FirefoxDriver();
 //        }
 
-        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
+//        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
         System.out.println("CREATING A DRIVER!!!1");
         driver = new ChromeDriver();
 

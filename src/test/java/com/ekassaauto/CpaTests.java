@@ -186,7 +186,7 @@ public class CpaTests {
 
                 authPage = mainPage.goToCpaProcessWithoutAutoLogin(existingCpaClientEntity.getId());
 
-                assertTrue(driver.getCurrentUrl().contains("/#/auth/"),
+                assertTrue(driver.getCurrentUrl().contains("/#/auth"),
                         "The auth page isn't displayed for existing cpa client without all required data!");
                 switch (parameter) {
                     case "firstName":

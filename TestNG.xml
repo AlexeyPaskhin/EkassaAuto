@@ -4,18 +4,17 @@
 <suite name="Suite1" configfailurepolicy="continue" >
     <test name="test1">
         <!--<parameter name="minNumberOfImages" value="6" />-->
-        <packages>
-            <package name="com.ekassaauto"/>
-        <!--<classes>-->
-            <!--<class name="com.ekassaauto.Registration">-->
-                <!--&lt;!&ndash;<methods>&ndash;&gt;-->
-                    <!--&lt;!&ndash;<include name="inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent"/>&ndash;&gt;-->
-                <!--&lt;!&ndash;</methods>&ndash;&gt;-->
-            <!--</class>-->
-            <!--<class name="com.ekassaauto.CpaTests" />-->
-        <!--</classes>-->
+        <!--<packages>-->
+            <!--<package name="com.ekassaauto"/>-->
+        <classes>
+            <class name="com.ekassaauto.Registration">
+                <!--<methods>-->
+                    <!--<include name="inscriptionInTheSubmitButtonsIfAuthorizationIsAbsent"/>-->
+                <!--</methods>-->
+            </class>
+            <class name="com.ekassaauto.CpaTests" />
+        </classes>
 
-        </packages>
+        <!--</packages>-->
     </test>
 </suite>
-        C:\Users\user\IdeaProjects\EkassaAuto\

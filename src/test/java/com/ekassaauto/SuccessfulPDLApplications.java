@@ -39,15 +39,15 @@ public class SuccessfulPDLApplications {
     private void startBrowser() {
         ////        if (browser.equalsIgnoreCase("chrome")) {
         ChromeDriverManager.getInstance().setup();
-//        driver = new ChromeDriver();
+        driver = new ChromeDriver();
 //        } else if (browser.equalsIgnoreCase("firefox")) {
 //            FirefoxDriverManager.getInstance().setup();
 //            driver = new FirefoxDriver();
 //        }
 
 //        System.setProperty("webdriver.chrome.driver", chromeDriverPath);
-        System.out.println("CREATING A DRIVER!!!11");
-        driver = new ChromeDriver();
+//        System.out.println("CREATING A DRIVER!!!11");
+//        driver = new ChromeDriver();
 
         options = driver.manage();
         options.timeouts().implicitlyWait(2, TimeUnit.SECONDS);

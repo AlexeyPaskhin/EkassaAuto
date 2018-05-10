@@ -122,17 +122,17 @@ public class CpaTests {
 //        driver.navigate().refresh();
 //    }
 
-    @Test(invocationCount = 2)
+    @Test
     public void newCpaClientProcessWithMinOffer() throws ParseException, SQLException {
         mainPage.logOut();
         cpaClientCasheDAO.deleteAllCpaCache();
-        userCredentialsDAO.deleteUserByPhone(regPhone);
+        userCredentialsDAO.deleteUserByPhone("222222215");
         instWormCacheDAO.deleteInstWormCache(name, pesel, lastName, bankAccount);
 
         try (CloseableHttpClient client = HttpClientBuilder.create().setConnectionManagerShared(true).build()) {
 
             JSONObject data = (JSONObject) parser.parse(new FileReader("src/test/resources/cpaInfo.json"));
-            data.put("phone", regPhone); data.put("empType1", AboutMePage.EmploymentTypes.Student.getValue());
+            data.put("phone", "222222215"); data.put("empType1", AboutMePage.EmploymentTypes.Student.getValue());
 
             HttpUriRequest request = buildCpaPostRequest(data);
 

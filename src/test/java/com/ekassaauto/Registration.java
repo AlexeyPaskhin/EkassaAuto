@@ -193,8 +193,8 @@ public class Registration {
         assertTrue(driver.getCurrentUrl().contains("/#/auth"), "The auth page isn't loaded after " +
                 "consolidation process was started without authorization!");
         assertEquals(countVisElems, 3, "Not each input element is displayed!");
-        assertEquals(authPage.findElementsByXPath("//ul[@ng-controller='BreadcrumbsCtrl']").size(), 1,
-                "There are no breadcrumbs at the auth page!");
+//        assertEquals(authPage.findElementsByXPath("//ul[@ng-controller='BreadcrumbsCtrl']").size(), 1,
+//                "There are no breadcrumbs at the auth page!");
     }
 
     @Test(priority = 12)

@@ -6,7 +6,7 @@
 
     <groupId>Ekassa</groupId>
     <artifactId>TheFirst</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-SNAPSHOTKEK</version>
     <build>
         <plugins>
             <plugin>
@@ -15,6 +15,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
@@ -23,8 +24,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.21.0</version>
                 <configuration>
+                    <testFailureIgnore>false</testFailureIgnore>
+
                     <suiteXmlFiles>
-                        <suiteXmlFile>TestNG.xml</suiteXmlFile>
+                        <suiteXmlFile>ExactTestMethods.xml</suiteXmlFile>
                     </suiteXmlFiles>
 
                     <properties>
@@ -32,18 +35,64 @@
                             <name>surefire.testng.verbose</name>
                             <value>10</value>
                         </property>
+
+                        <!--<property>-->
+                            <!--<name>listener</name>-->
+                            <!--<value>ru.yandex.qatools.allure.testng.AllureTestListener</value>-->
+                        <!--</property>-->
                     </properties>
+
+                    <!--<argLine>-->
+                        <!-- -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"-->
+                    <!--</argLine>-->
+
 
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+                <version>2.8</version>
+            </plugin>
+
         </plugins>
     </build>
 
     <properties>
         <hibernate.version>4.3.6.Final</hibernate.version>
+
+        <aspectj.version>1.9.1</aspectj.version>
+        <allure.version>2.8</allure.version>
     </properties>
 
     <dependencies>
+
+            <!--<dependency>-->
+                <!--<groupId>ru.yandex.qatools.allure</groupId>-->
+                <!--<artifactId>allure-testng-adaptor</artifactId>-->
+                <!--<version>1.5.4</version>-->
+            <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.aspectj</groupId>-->
+            <!--<artifactId>aspectjweaver</artifactId>-->
+            <!--<version>${aspectj.version}</version>-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>io.qameta.allure</groupId>-->
+            <!--<artifactId>allure-testng</artifactId>-->
+            <!--<version>2.6.0</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+        <!--<dependency>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-compiler-plugin</artifactId>-->
+            <!--<version>3.7.0</version>-->
+        <!--</dependency>-->
+
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>

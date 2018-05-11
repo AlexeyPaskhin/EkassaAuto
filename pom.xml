@@ -36,10 +36,17 @@
                             <value>10</value>
                         </property>
 
-                        <!--<property>-->
-                            <!--<name>listener</name>-->
-                            <!--<value>ru.yandex.qatools.allure.testng.AllureTestListener</value>-->
-                        <!--</property>-->
+                        <property>
+                            <name>listener</name>
+                            <value>ru.yandex.qatools.allure.testng.AllureTestListener</value>
+                        </property>
+
+                        <systemProperties>
+                            <property>
+                                <name>allure.results.directory</name>
+                                <value>${project.build.directory}/allure-results</value>
+                            </property>
+                        </systemProperties>
                     </properties>
 
                     <argLine>

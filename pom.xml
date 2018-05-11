@@ -37,10 +37,10 @@
                             <value>10</value>
                         </property>
 
-                        <property>
-                            <name>listener</name>
-                            <value>ru.yandex.qatools.allure.testng.AllureTestListener</value>
-                        </property>
+                        <!--<property>-->
+                            <!--<name>listener</name>-->
+                            <!--<value>ru.yandex.qatools.allure.testng.AllureTestListener</value>-->
+                        <!--</property>-->
 
                         <systemProperties>
                             <property>

@@ -37,15 +37,22 @@
                             <value>10</value>
                         </property>
 
-                        <!--<property>-->
-                            <!--<name>listener</name>-->
-                            <!--<value>ru.yandex.qatools.allure.testng.AllureTestListener</value>-->
-                        <!--</property>-->
+                        <property>
+                            <name>listener</name>
+                            <value>ru.yandex.qatools.allure.testng.AllureTestListener</value>
+                        </property>
+
+                        <systemProperties>
+                            <property>
+                                <name>allure.results.directory</name>
+                                <value>${project.build.directory}/allure-results</value>
+                            </property>
+                        </systemProperties>
                     </properties>
 
-                    <!--<argLine>-->
-                        <!-- -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"-->
-                    <!--</argLine>-->
+                    <argLine>
+                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                    </argLine>
 
 
                 </configuration>
@@ -78,11 +85,11 @@
                 <!--<version>1.5.4</version>-->
             <!--</dependency>-->
 
-        <!--<dependency>-->
-            <!--<groupId>org.aspectj</groupId>-->
-            <!--<artifactId>aspectjweaver</artifactId>-->
-            <!--<version>${aspectj.version}</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
 
         <!--<dependency>-->
             <!--<groupId>io.qameta.allure</groupId>-->

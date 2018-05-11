@@ -6,14 +6,14 @@
         <!--<parameter name="minNumberOfImages" value="6" />-->
         <classes>
             <class name="com.ekassaauto.Registration">
-                <methods>
-                    <include name="successfulSubmittingPdlForm" />
-                    <include name="successfulSubmittingAuthFormForRegistration" />
+                <!--<methods>-->
+                    <!--<include name="successfulSubmittingPdlForm" />-->
+                    <!--<include name="successfulSubmittingAuthFormForRegistration" />-->
                     <!--<include name="passingInitiallyBlankAboutMeScreenForRegistration" />-->
                     <!--<include name="recordingClientInfoToPlainUsersTable" />-->
                     <!--<include name="enteringFirstTimeToPersonalAccount"/>-->
                     <!--<include name="submittingRegFormWithUnmarkedConcessionToEmailsCheckbox"/>-->
-                </methods>
+                <!--</methods>-->
 
             </class>
 
